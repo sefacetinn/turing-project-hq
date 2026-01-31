@@ -2,7 +2,7 @@
   "meta": {
     "projectName": "Turing",
     "version": "1.0.0",
-    "updatedAt": "2026-01-31T18:00:00.000Z",
+    "updatedAt": "2026-01-31T19:30:00.000Z",
     "description": "Etkinlik organizasyonu icin provider-organizer marketplace platformu"
   },
   "overview": {
@@ -21,15 +21,17 @@
       {"id": "B-003", "title": "GORUNUM yazim hatasi", "priority": "P1", "status": "Open"}
     ],
     "quickLinks": [
-      {"title": "GitHub Repo", "url": "#", "icon": "github"},
-      {"title": "Firebase Console", "url": "#", "icon": "firebase"},
-      {"title": "TestFlight", "url": "#", "icon": "apple"},
-      {"title": "Figma", "url": "#", "icon": "figma"}
+      {"title": "GitHub Repo", "url": "https://github.com/turing-app/turing", "icon": "github"},
+      {"title": "Project HQ Repo", "url": "https://github.com/sefacetinn/turing-project-hq", "icon": "github"},
+      {"title": "Firebase Console", "url": "https://console.firebase.google.com/project/turing-app", "icon": "firebase"},
+      {"title": "Turing Website", "url": "https://turingtr.com", "icon": "web"}
     ],
     "recentChanges": [
+      "Project HQ hq.turingtr.com'da yayina alindi",
+      "UX tasarimi premium dark theme ile yenilendi",
+      "GitHub repo olusturuldu ve Cloudflare Pages entegrasyonu yapildi",
       "Revizyon raporu olusturuldu (59 ekran)",
-      "TestFlight Build #24 gonderildi",
-      "Sprint 1 baslatildi"
+      "TestFlight Build #24 gonderildi"
     ]
   },
   "product": {
@@ -524,9 +526,45 @@
       "owner": "Turing",
       "notes": "Turing'in genel tanıtım sitesi. Ürün anlatımı, marka vitrini ve dış referans noktası.",
       "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-007",
+      "title": "Project HQ",
+      "url": "https://hq.turingtr.com",
+      "category": "Documentation",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Proje dokumantasyonu ve takip merkezi (Cloudflare Pages)",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-008",
+      "title": "Project HQ GitHub",
+      "url": "https://github.com/sefacetinn/turing-project-hq",
+      "category": "Repository",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Project HQ kaynak kodu",
+      "lastUpdated": "2026-01-31"
     }
   ],
   "changelog": [
+    {
+      "id": "CL-003",
+      "date": "2026-01-31",
+      "version": "1.1.0",
+      "title": "Project HQ Cloudflare'da Yayinda",
+      "description": "Project HQ hq.turingtr.com adresinde yayina alindi",
+      "changes": [
+        "GitHub repository olusturuldu (sefacetinn/turing-project-hq)",
+        "Cloudflare Pages entegrasyonu yapildi",
+        "Custom domain hq.turingtr.com baglandi",
+        "Premium dark theme ile UX tasarimi yenilendi",
+        "Glassmorphism efektleri, Inter font, 8px grid sistemi",
+        "Micro-interactions ve animasyonlar eklendi"
+      ],
+      "issueIds": []
+    },
     {
       "id": "CL-001",
       "date": "2026-01-31",
