@@ -1,0 +1,414 @@
+{
+  "meta": {
+    "projectName": "Turing",
+    "version": "2.0.0",
+    "updatedAt": "2026-01-31T20:00:00.000Z",
+    "description": "Etkinlik organizasyonu icin provider-organizer marketplace platformu"
+  },
+  "issues": [
+    {
+      "id": "ISS-0001",
+      "title": "Tarih formati ISO yerine Turkce olmali",
+      "type": "Bug",
+      "severity": "High",
+      "priority": "P0",
+      "status": "backlog",
+      "area": "Localization",
+      "screen": "All Screens",
+      "platform": "All",
+      "description": "Tum ekranlarda tarihler '2026-03-20' formatinda gosteriliyor. '20 Mart 2026' seklinde Turkce olmali.",
+      "rootCause": "Date formatter Turkce locale kullanmiyor",
+      "fixApproach": "formatDate util fonksiyonuna tr-TR locale ekle",
+      "files": ["src/utils/dateFormatter.ts"],
+      "assignee": "",
+      "sprintId": "SPRINT-001",
+      "createdAt": "2026-01-30",
+      "updatedAt": "2026-01-31"
+    },
+    {
+      "id": "ISS-0002",
+      "title": "Para formati tutarsiz - K kisaltmasi anlasilmiyor",
+      "type": "Bug",
+      "severity": "High",
+      "priority": "P0",
+      "status": "backlog",
+      "area": "Localization",
+      "screen": "ProviderDashboardScreen",
+      "platform": "All",
+      "description": "TL4772K yerine TL4.772.000 veya 4,77M TL kullanilmali",
+      "rootCause": "formatCurrency fonksiyonu tutarsiz",
+      "fixApproach": "Tek bir para format standardi belirle",
+      "files": ["src/utils/currencyFormatter.ts"],
+      "assignee": "",
+      "sprintId": "SPRINT-001",
+      "createdAt": "2026-01-30",
+      "updatedAt": "2026-01-31"
+    },
+    {
+      "id": "ISS-0003",
+      "title": "GORUNUM yazim hatasi",
+      "type": "Bug",
+      "severity": "High",
+      "priority": "P1",
+      "status": "backlog",
+      "area": "UI",
+      "screen": "SettingsScreen",
+      "platform": "All",
+      "description": "Settings ekraninda 'GORUNUM' yerine 'GORUNTUM' veya Turkce karakterli olmali",
+      "rootCause": "Hardcoded string",
+      "fixApproach": "i18n dosyasini duzelt",
+      "files": ["src/i18n/tr.json"],
+      "assignee": "",
+      "sprintId": "SPRINT-001",
+      "createdAt": "2026-01-30",
+      "updatedAt": "2026-01-31"
+    },
+    {
+      "id": "ISS-0004",
+      "title": "Private yerine Ozel yazilmali",
+      "type": "Bug",
+      "severity": "High",
+      "priority": "P1",
+      "status": "backlog",
+      "area": "Localization",
+      "screen": "CreateEventScreen",
+      "platform": "All",
+      "description": "Etkinlik olusturma ekraninda 'Private' Ingilizce kalmis",
+      "rootCause": "i18n eksik",
+      "fixApproach": "Turkce cevirisi ekle",
+      "files": ["src/i18n/tr.json"],
+      "assignee": "",
+      "sprintId": "",
+      "createdAt": "2026-01-30",
+      "updatedAt": "2026-01-31"
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "SS-001",
+      "name": "Login Screen",
+      "path": "/screenshots/auth/login.png",
+      "feature": "Auth",
+      "tags": ["login", "auth", "onboarding"],
+      "platform": "iOS",
+      "createdAt": "2026-01-30"
+    },
+    {
+      "id": "SS-002",
+      "name": "Provider Dashboard",
+      "path": "/screenshots/provider/dashboard.png",
+      "feature": "Provider",
+      "tags": ["dashboard", "provider", "stats"],
+      "platform": "iOS",
+      "relatedIssueIds": ["ISS-0002"],
+      "createdAt": "2026-01-30"
+    },
+    {
+      "id": "SS-003",
+      "name": "Marketplace Categories",
+      "path": "/screenshots/marketplace/categories.png",
+      "feature": "Marketplace",
+      "tags": ["marketplace", "categories", "services"],
+      "platform": "iOS",
+      "createdAt": "2026-01-30"
+    }
+  ],
+  "links": [
+    {
+      "id": "LINK-001",
+      "title": "GitHub Repository",
+      "url": "https://github.com/turing-app/turing",
+      "category": "Repository",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Main monorepo",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-002",
+      "title": "Firebase Console",
+      "url": "https://console.firebase.google.com/project/turing-app",
+      "category": "Infrastructure",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Production Firebase project",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-003",
+      "title": "Figma Designs",
+      "url": "https://figma.com/file/xxx",
+      "category": "Design",
+      "type": "external",
+      "owner": "Design Team",
+      "notes": "UI/UX tasarimlari",
+      "lastUpdated": "2026-01-25"
+    },
+    {
+      "id": "LINK-004",
+      "title": "Sentry Dashboard",
+      "url": "https://sentry.io/organizations/turing/",
+      "category": "Infrastructure",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Error tracking",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-005",
+      "title": "TestFlight",
+      "url": "https://appstoreconnect.apple.com/apps/xxx/testflight",
+      "category": "Distribution",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "iOS beta distribution",
+      "lastUpdated": "2026-01-30"
+    },
+    {
+      "id": "LINK-006",
+      "title": "Turing Website",
+      "url": "https://turingtr.com/",
+      "category": "Website",
+      "type": "external",
+      "owner": "Turing",
+      "notes": "Official website",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-007",
+      "title": "Project HQ GitHub",
+      "url": "https://github.com/sefacetinn/turing-project-hq",
+      "category": "Repository",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Project HQ source code",
+      "lastUpdated": "2026-01-31"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-001",
+      "title": "Use iyzico for payments",
+      "description": "Selected iyzico as the payment provider for Turkish market compliance",
+      "category": "Payments",
+      "status": "approved",
+      "date": "2026-01-15"
+    },
+    {
+      "id": "DEC-002",
+      "title": "Location permission while-in-use only",
+      "description": "Only request location while app is in use, not background access",
+      "category": "Apple Compliance",
+      "status": "approved",
+      "date": "2026-01-20"
+    },
+    {
+      "id": "DEC-003",
+      "title": "No third-party tracking/ads",
+      "description": "App will not include any ads or third-party tracking SDKs",
+      "category": "Privacy",
+      "status": "approved",
+      "date": "2026-01-20"
+    }
+  ],
+  "activityLog": [
+    {
+      "id": "ACT-001",
+      "type": "change",
+      "action": "Project HQ Upgraded",
+      "description": "Migrated HQ to Next.js with professional dashboard UI",
+      "timestamp": "2026-01-31T20:00:00.000Z"
+    },
+    {
+      "id": "ACT-002",
+      "type": "build",
+      "action": "TestFlight Build #24",
+      "description": "iOS build submitted to TestFlight",
+      "timestamp": "2026-01-30T14:00:00.000Z",
+      "relatedId": "BUILD-001"
+    },
+    {
+      "id": "ACT-003",
+      "type": "issue",
+      "action": "Issues Created",
+      "description": "4 localization issues identified from review",
+      "timestamp": "2026-01-30T10:00:00.000Z"
+    }
+  ],
+  "builds": [
+    {
+      "id": "BUILD-001",
+      "buildNumber": "24",
+      "version": "1.0.0",
+      "channel": "TestFlight",
+      "platform": "iOS",
+      "gitCommit": "abc123def",
+      "gitBranch": "main",
+      "date": "2026-01-30",
+      "expiresAt": "2026-04-30",
+      "notes": "Initial TestFlight build with all core features",
+      "knownIssueIds": ["ISS-0001", "ISS-0002", "ISS-0003"],
+      "status": "available"
+    },
+    {
+      "id": "BUILD-002",
+      "buildNumber": "1",
+      "version": "1.0.0",
+      "channel": "Internal Testing",
+      "platform": "Android",
+      "gitCommit": "abc123def",
+      "gitBranch": "main",
+      "date": "2026-01-30",
+      "notes": "Initial Android internal test build",
+      "knownIssueIds": ["ISS-0001", "ISS-0002", "ISS-0003"],
+      "status": "available"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "SPRINT-001",
+      "name": "Sprint 1 - Localization & Critical Fixes",
+      "goal": "Fix all date/currency formats, resolve typos",
+      "startDate": "2026-02-01",
+      "endDate": "2026-02-14",
+      "status": "active",
+      "issueIds": ["ISS-0001", "ISS-0002", "ISS-0003"]
+    }
+  ],
+  "marketplaceCategories": [
+    {
+      "id": "CAT-001",
+      "name": "DJ & Muzik",
+      "slug": "dj-muzik",
+      "legacyCount": 45,
+      "newCount": 45,
+      "subcategories": [
+        { "id": "SUB-001", "name": "DJ", "slug": "dj" },
+        { "id": "SUB-002", "name": "Canli Muzik", "slug": "canli-muzik" },
+        { "id": "SUB-003", "name": "Ses Sistemi", "slug": "ses-sistemi" }
+      ]
+    },
+    {
+      "id": "CAT-002",
+      "name": "Fotograf & Video",
+      "slug": "fotograf-video",
+      "legacyCount": 78,
+      "newCount": 78,
+      "subcategories": [
+        { "id": "SUB-004", "name": "Fotografci", "slug": "fotografci" },
+        { "id": "SUB-005", "name": "Videografi", "slug": "videografi" },
+        { "id": "SUB-006", "name": "Drone", "slug": "drone" }
+      ]
+    },
+    {
+      "id": "CAT-003",
+      "name": "Catering",
+      "slug": "catering",
+      "legacyCount": 32,
+      "newCount": 30,
+      "missingIds": ["PROV-123", "PROV-456"]
+    },
+    {
+      "id": "CAT-004",
+      "name": "Dekorasyon",
+      "slug": "dekorasyon",
+      "legacyCount": 25,
+      "newCount": 25
+    },
+    {
+      "id": "CAT-005",
+      "name": "Mekan",
+      "slug": "mekan",
+      "legacyCount": 18,
+      "newCount": 18
+    }
+  ],
+  "compliance": {
+    "apple": {
+      "appStoreStatus": "Not Submitted",
+      "lastReviewDate": "",
+      "checklist": [
+        { "id": "ASC-001", "item": "App Screenshots (6.7\", 6.5\", 5.5\")", "status": "pending", "notes": "" },
+        { "id": "ASC-002", "item": "App Privacy Policy URL", "status": "done", "notes": "https://turingtr.com/privacy" },
+        { "id": "ASC-003", "item": "Demo Account Credentials", "status": "pending", "notes": "demo@turing.app / Demo123!" },
+        { "id": "ASC-004", "item": "App Tracking Transparency (ATT)", "status": "done", "notes": "No tracking, ATT not needed" },
+        { "id": "ASC-005", "item": "In-App Purchase Configuration", "status": "pending", "notes": "Subscription plans" },
+        { "id": "ASC-006", "item": "App Description & Keywords", "status": "pending", "notes": "" },
+        { "id": "ASC-007", "item": "What's New Text", "status": "pending", "notes": "" },
+        { "id": "ASC-008", "item": "Review Notes", "status": "pending", "notes": "" },
+        { "id": "ASC-009", "item": "Export Compliance (ECCN)", "status": "done", "notes": "HTTPS only" },
+        { "id": "ASC-010", "item": "Age Rating Questionnaire", "status": "pending", "notes": "" },
+        { "id": "ASC-011", "item": "Content Rights", "status": "done", "notes": "User-generated content" },
+        { "id": "ASC-012", "item": "Sign in with Apple", "status": "done", "notes": "Implemented" },
+        { "id": "ASC-013", "item": "Location Permission (while-in-use)", "status": "done", "notes": "Only while-in-use" },
+        { "id": "ASC-014", "item": "Camera Permission", "status": "done", "notes": "For profile photos" },
+        { "id": "ASC-015", "item": "Push Notification Permission", "status": "done", "notes": "For messages/offers" }
+      ],
+      "privacyNutritionLabels": [
+        { "category": "Contact Info", "collected": true, "purpose": "App Functionality", "linked": true },
+        { "category": "Identifiers", "collected": true, "purpose": "App Functionality", "linked": true },
+        { "category": "Usage Data", "collected": true, "purpose": "Analytics", "linked": false },
+        { "category": "Location", "collected": true, "purpose": "App Functionality", "linked": true },
+        { "category": "Photos", "collected": true, "purpose": "App Functionality", "linked": true }
+      ]
+    },
+    "googlePlay": {
+      "playStoreStatus": "Not Submitted",
+      "lastReviewDate": "",
+      "checklist": [
+        { "id": "GP-001", "item": "Store Listing Graphics", "status": "pending", "notes": "Feature graphic 1024x500" },
+        { "id": "GP-002", "item": "Data Safety Form", "status": "pending", "notes": "" },
+        { "id": "GP-003", "item": "Privacy Policy URL", "status": "done", "notes": "https://turingtr.com/privacy" },
+        { "id": "GP-004", "item": "Target Audience & Content", "status": "pending", "notes": "18+" },
+        { "id": "GP-005", "item": "App Access (Demo Account)", "status": "pending", "notes": "" },
+        { "id": "GP-006", "item": "Ads Declaration", "status": "done", "notes": "No ads" },
+        { "id": "GP-007", "item": "Target SDK Version", "status": "done", "notes": "targetSdk 34" },
+        { "id": "GP-008", "item": "Permissions Declaration", "status": "pending", "notes": "Camera, Location, Notifications" }
+      ],
+      "dataSafetyForm": {
+        "dataCollected": ["Name", "Email", "Phone", "Location", "Photos"],
+        "dataShared": ["None"],
+        "securityPractices": ["Data encrypted in transit", "Data can be deleted"]
+      }
+    },
+    "rejections": []
+  },
+  "architecture": {
+    "overview": "Monorepo: React Native (Expo) mobile app + Firebase backend + Next.js admin portal",
+    "directories": [
+      { "path": "src/", "description": "Main React Native source code" },
+      { "path": "src/screens/", "description": "Screen components" },
+      { "path": "src/components/", "description": "Reusable components" },
+      { "path": "src/services/", "description": "API and Firebase services" },
+      { "path": "src/hooks/", "description": "Custom React hooks" },
+      { "path": "src/utils/", "description": "Helper functions" },
+      { "path": "src/i18n/", "description": "Localization files" },
+      { "path": "src/store/", "description": "State management (Zustand)" },
+      { "path": "functions/", "description": "Firebase Cloud Functions" },
+      { "path": "admin/", "description": "Next.js admin portal" }
+    ],
+    "firebaseCollections": [
+      { "name": "users", "description": "User profiles", "indexes": ["email", "createdAt"] },
+      { "name": "organizations", "description": "Company/org records", "indexes": ["ownerId", "type"] },
+      { "name": "memberships", "description": "User-org relationships", "indexes": ["userId", "organizationId"] },
+      { "name": "services", "description": "Provider services", "indexes": ["providerId", "category"] },
+      { "name": "events", "description": "Events", "indexes": ["organizerId", "status", "date"] },
+      { "name": "offers", "description": "Offers/quotes", "indexes": ["eventId", "providerId"] },
+      { "name": "messages", "description": "Chat messages", "indexes": ["conversationId", "createdAt"] },
+      { "name": "payments", "description": "Payment records", "indexes": ["userId", "status"] }
+    ]
+  },
+  "quickLinks": [
+    { "title": "GitHub Repo", "url": "https://github.com/turing-app/turing", "icon": "github" },
+    { "title": "HQ GitHub", "url": "https://github.com/sefacetinn/turing-project-hq", "icon": "github" },
+    { "title": "Firebase", "url": "https://console.firebase.google.com/project/turing-app", "icon": "database" },
+    { "title": "Turing Website", "url": "https://turingtr.com", "icon": "globe" }
+  ],
+  "recentChanges": [
+    "Project HQ upgraded to Next.js dashboard",
+    "Deployed to hq.turingtr.com via Cloudflare Pages",
+    "TestFlight Build #24 submitted",
+    "4 localization issues identified",
+    "Sprint 1 started"
+  ]
+}

@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #e5e5e5;
+  --background: #0a0a0a;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Selection */
+::selection {
+  background: #8b5cf6;
+  color: white;
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+@layer components {
+  .card {
+    @apply bg-dark-card border border-dark-border rounded-lg;
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent-light;
+  }
+
+  .btn-secondary {
+    @apply bg-dark-hover text-gray-200 border border-dark-border hover:bg-dark-border;
+  }
+
+  .btn-ghost {
+    @apply text-gray-400 hover:text-white hover:bg-dark-hover;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 bg-dark-bg border border-dark-border rounded-md text-white text-sm focus:border-accent focus:outline-none;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply bg-green-500/15 text-green-400;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-500/15 text-yellow-400;
+  }
+
+  .badge-error {
+    @apply bg-red-500/15 text-red-400;
+  }
+
+  .badge-info {
+    @apply bg-blue-500/15 text-blue-400;
+  }
+
+  .badge-neutral {
+    @apply bg-gray-500/15 text-gray-400;
+  }
+}
