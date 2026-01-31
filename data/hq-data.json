@@ -187,7 +187,7 @@
     {
       "id": "LINK-008",
       "title": "Admin Portal",
-      "url": "https://turing-admin-portal.vercel.app",
+      "url": "https://admin.turingtr.com",
       "category": "Infrastructure",
       "type": "external",
       "owner": "Dev Team",
@@ -411,7 +411,7 @@
   "quickLinks": [
     { "title": "GitHub Repo", "url": "https://github.com/turing-app/turing", "icon": "github" },
     { "title": "HQ GitHub", "url": "https://github.com/sefacetinn/turing-project-hq", "icon": "github" },
-    { "title": "Admin Portal", "url": "https://turing-admin-portal.vercel.app", "icon": "settings" },
+    { "title": "Admin Portal", "url": "https://admin.turingtr.com", "icon": "settings" },
     { "title": "Firebase", "url": "https://console.firebase.google.com/project/turing-app", "icon": "database" },
     { "title": "Turing Website", "url": "https://turingtr.com", "icon": "globe" }
   ],

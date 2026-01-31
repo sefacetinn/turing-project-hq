@@ -26,7 +26,7 @@ const navItems = [
 ];
 
 const externalLinks = [
-  { href: 'https://turing-admin-portal.vercel.app', label: 'Admin Portal', icon: Settings },
+  { href: 'https://admin.turingtr.com', label: 'Admin Portal', icon: Settings },
 ];
 
 export function Sidebar() {
