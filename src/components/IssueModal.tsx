@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { Issue } from '@/types/hq';
+import type { Issue, IssueStatus } from '@/types/hq';
 import {
   X,
   Bug,
@@ -18,9 +18,10 @@ import {
 interface IssueModalProps {
   issue: Issue;
   onClose: () => void;
+  onStatusChange?: (status: IssueStatus) => void;
 }
 
-export function IssueModal({ issue, onClose }: IssueModalProps) {
+export function IssueModal({ issue, onClose, onStatusChange }: IssueModalProps) {
   // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -53,6 +54,18 @@ export function IssueModal({ issue, onClose }: IssueModalProps) {
     P1: 'High',
     P2: 'Medium',
     P3: 'Low',
+  };
+
+  const handleMarkDone = () => {
+    if (onStatusChange) {
+      onStatusChange('done');
+    }
+  };
+
+  const handleStartProgress = () => {
+    if (onStatusChange) {
+      onStatusChange('in-progress');
+    }
   };
 
   return (
@@ -192,12 +205,14 @@ export function IssueModal({ issue, onClose }: IssueModalProps) {
           <button className="btn btn-secondary" onClick={onClose}>
             Close
           </button>
-          <button className="btn btn-ghost">
-            <Edit3 className="w-4 h-4" />
-            Edit
-          </button>
-          {issue.status !== 'done' && (
-            <button className="btn btn-primary">
+          {issue.status !== 'done' && issue.status !== 'in-progress' && onStatusChange && (
+            <button className="btn btn-ghost" onClick={handleStartProgress}>
+              <Clock className="w-4 h-4" />
+              Start Progress
+            </button>
+          )}
+          {issue.status !== 'done' && onStatusChange && (
+            <button className="btn btn-primary" onClick={handleMarkDone}>
               <CheckCircle2 className="w-4 h-4" />
               Mark Done
             </button>

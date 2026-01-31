@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import hqData from '../../../data/hq-data.json';
+import { useState, useMemo, useEffect } from 'react';
 import { IssueModal } from '@/components/IssueModal';
+import { AddIssueModal } from '@/components/AddIssueModal';
 import type { Issue, IssueStatus, IssuePriority } from '@/types/hq';
 import {
   Bug,
@@ -13,14 +13,48 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+// LocalStorage key for issues
+const ISSUES_STORAGE_KEY = 'hq_issues';
+
+// Load initial data
+const loadInitialIssues = async (): Promise<Issue[]> => {
+  const hqData = await import('../../../data/hq-data.json');
+  return hqData.issues as Issue[];
+};
+
 export default function IssuesPage() {
+  const [issues, setIssues] = useState<Issue[]>([]);
   const [statusFilter, setStatusFilter] = useState<IssueStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<IssuePriority | 'all'>('all');
   const [areaFilter, setAreaFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  const issues = hqData.issues as Issue[];
+  // Load issues on mount
+  useEffect(() => {
+    const loadIssues = async () => {
+      // Try to load from localStorage first
+      const stored = localStorage.getItem(ISSUES_STORAGE_KEY);
+      if (stored) {
+        setIssues(JSON.parse(stored));
+      } else {
+        // Load from JSON file
+        const initialIssues = await loadInitialIssues();
+        setIssues(initialIssues);
+        localStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(initialIssues));
+      }
+    };
+    loadIssues();
+  }, []);
+
+  // Save to localStorage when issues change
+  useEffect(() => {
+    if (issues.length > 0) {
+      localStorage.setItem(ISSUES_STORAGE_KEY, JSON.stringify(issues));
+    }
+  }, [issues]);
+
   const areas = Array.from(new Set(issues.map(i => i.area)));
 
   const filteredIssues = useMemo(() => {
@@ -52,6 +86,30 @@ export default function IssuesPage() {
     P3: 'badge-neutral',
   };
 
+  const handleAddIssue = (newIssue: Omit<Issue, 'id' | 'createdAt' | 'updatedAt' | 'severity'>) => {
+    const id = `ISS-${String(issues.length + 1).padStart(4, '0')}`;
+    const now = new Date().toISOString().split('T')[0];
+
+    const issue: Issue = {
+      ...newIssue,
+      id,
+      severity: newIssue.priority === 'P0' ? 'High' : newIssue.priority === 'P1' ? 'High' : newIssue.priority === 'P2' ? 'Medium' : 'Low',
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setIssues(prev => [issue, ...prev]);
+  };
+
+  const handleUpdateIssueStatus = (issueId: string, newStatus: IssueStatus) => {
+    setIssues(prev => prev.map(issue =>
+      issue.id === issueId
+        ? { ...issue, status: newStatus, updatedAt: new Date().toISOString().split('T')[0] }
+        : issue
+    ));
+    setSelectedIssue(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -65,7 +123,7 @@ export default function IssuesPage() {
             <p className="page-description">Track bugs, enhancements, and tasks</p>
           </div>
         </div>
-        <button className="btn btn-primary">
+        <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
           <Plus className="w-4 h-4" />
           Add Issue
         </button>
@@ -211,7 +269,18 @@ export default function IssuesPage() {
       </div>
 
       {selectedIssue && (
-        <IssueModal issue={selectedIssue} onClose={() => setSelectedIssue(null)} />
+        <IssueModal
+          issue={selectedIssue}
+          onClose={() => setSelectedIssue(null)}
+          onStatusChange={(status) => handleUpdateIssueStatus(selectedIssue.id, status)}
+        />
+      )}
+
+      {showAddModal && (
+        <AddIssueModal
+          onClose={() => setShowAddModal(false)}
+          onSave={handleAddIssue}
+        />
       )}
     </div>
   );

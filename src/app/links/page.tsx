@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import hqData from '../../../data/hq-data.json';
+import { useState, useMemo, useEffect } from 'react';
 import type { Link } from '@/types/hq';
 import {
   Link2,
@@ -17,13 +16,43 @@ import {
   Globe,
   Shield,
   FolderOpen,
+  X,
+  Save,
 } from 'lucide-react';
 
+const LINKS_STORAGE_KEY = 'hq_links';
+
+const loadInitialLinks = async (): Promise<Link[]> => {
+  const hqData = await import('../../../data/hq-data.json');
+  return hqData.links as Link[];
+};
+
 export default function LinksPage() {
+  const [links, setLinks] = useState<Link[]>([]);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  const links = hqData.links as Link[];
+  useEffect(() => {
+    const loadLinks = async () => {
+      const stored = localStorage.getItem(LINKS_STORAGE_KEY);
+      if (stored) {
+        setLinks(JSON.parse(stored));
+      } else {
+        const initial = await loadInitialLinks();
+        setLinks(initial);
+        localStorage.setItem(LINKS_STORAGE_KEY, JSON.stringify(initial));
+      }
+    };
+    loadLinks();
+  }, []);
+
+  useEffect(() => {
+    if (links.length > 0) {
+      localStorage.setItem(LINKS_STORAGE_KEY, JSON.stringify(links));
+    }
+  }, [links]);
+
   const categories = Array.from(new Set(links.map(l => l.category)));
 
   const filteredLinks = useMemo(() => {
@@ -57,6 +86,19 @@ export default function LinksPage() {
     Website: Globe,
   };
 
+  const handleAddLink = (newLink: Omit<Link, 'id' | 'lastUpdated'>) => {
+    const id = `LINK-${String(links.length + 1).padStart(3, '0')}`;
+    const now = new Date().toISOString().split('T')[0];
+
+    const link: Link = {
+      ...newLink,
+      id,
+      lastUpdated: now,
+    };
+
+    setLinks(prev => [link, ...prev]);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -70,7 +112,7 @@ export default function LinksPage() {
             <p className="page-description">Central hub for all project resources</p>
           </div>
         </div>
-        <button className="btn btn-primary">
+        <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
           <Plus className="w-4 h-4" />
           Add Link
         </button>
@@ -184,6 +226,168 @@ export default function LinksPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Add Link Modal */}
+      {showAddModal && (
+        <AddLinkModal
+          onClose={() => setShowAddModal(false)}
+          onSave={handleAddLink}
+          existingCategories={categories}
+        />
+      )}
+    </div>
+  );
+}
+
+// Add Link Modal Component
+function AddLinkModal({
+  onClose,
+  onSave,
+  existingCategories,
+}: {
+  onClose: () => void;
+  onSave: (link: Omit<Link, 'id' | 'lastUpdated'>) => void;
+  existingCategories: string[];
+}) {
+  const [formData, setFormData] = useState({
+    title: '',
+    url: 'https://',
+    category: '',
+    type: 'external' as 'external' | 'local',
+    owner: '',
+    notes: '',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title.trim() || !formData.url.trim() || !formData.category.trim()) {
+      alert('Title, URL, and Category are required');
+      return;
+    }
+
+    onSave({
+      title: formData.title,
+      url: formData.url,
+      category: formData.category,
+      type: formData.type,
+      owner: formData.owner || undefined,
+      notes: formData.notes || undefined,
+    });
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-status-success/10">
+              <Link2 className="w-5 h-5 text-status-success" />
+            </div>
+            <h2 className="text-lg font-semibold text-zinc-100">Add New Link</h2>
+          </div>
+          <button onClick={onClose} className="btn btn-ghost btn-icon">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body space-y-4">
+            <div>
+              <label className="text-xs font-medium text-zinc-500 block mb-1.5">
+                Title <span className="text-status-error">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="input"
+                placeholder="e.g., GitHub Repository"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-zinc-500 block mb-1.5">
+                URL <span className="text-status-error">*</span>
+              </label>
+              <input
+                type="url"
+                value={formData.url}
+                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                className="input font-mono text-sm"
+                placeholder="https://github.com/..."
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">
+                  Category <span className="text-status-error">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="input"
+                  placeholder="e.g., Repository"
+                  list="categories"
+                  required
+                />
+                <datalist id="categories">
+                  {existingCategories.map(c => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">Type</label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as 'external' | 'local' })}
+                  className="input"
+                >
+                  <option value="external">External</option>
+                  <option value="local">Local</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-zinc-500 block mb-1.5">Owner</label>
+              <input
+                type="text"
+                value={formData.owner}
+                onChange={(e) => setFormData({ ...formData, owner: e.target.value })}
+                className="input"
+                placeholder="e.g., Team Name"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-zinc-500 block mb-1.5">Notes</label>
+              <textarea
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                className="input min-h-[80px] resize-y"
+                placeholder="Additional notes about this link..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              <Save className="w-4 h-4" />
+              Save Link
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
