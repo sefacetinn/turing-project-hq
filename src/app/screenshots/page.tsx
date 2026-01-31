@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import Image from 'next/image';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import type { Screenshot } from '@/types/hq';
 import {
   ImageIcon,
@@ -15,24 +14,35 @@ import {
   X,
   Save,
   Upload,
+  Trash2,
+  ZoomIn,
 } from 'lucide-react';
 
 const SCREENSHOTS_STORAGE_KEY = 'hq_screenshots';
+const SCREENSHOT_IMAGES_KEY = 'hq_screenshot_images';
 
-const loadInitialScreenshots = async (): Promise<Screenshot[]> => {
+interface ScreenshotWithImage extends Screenshot {
+  imageData?: string; // base64 image data
+}
+
+const loadInitialScreenshots = async (): Promise<ScreenshotWithImage[]> => {
   const hqData = await import('../../../data/hq-data.json');
-  return hqData.screenshots as Screenshot[];
+  return hqData.screenshots as ScreenshotWithImage[];
 };
 
 export default function ScreenshotsPage() {
-  const [screenshots, setScreenshots] = useState<Screenshot[]>([]);
+  const [screenshots, setScreenshots] = useState<ScreenshotWithImage[]>([]);
+  const [imageCache, setImageCache] = useState<Record<string, string>>({});
   const [featureFilter, setFeatureFilter] = useState<string>('all');
   const [platformFilter, setPlatformFilter] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedScreenshot, setSelectedScreenshot] = useState<Screenshot | null>(null);
+  const [selectedScreenshot, setSelectedScreenshot] = useState<ScreenshotWithImage | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
+  // Load screenshots and images on mount
   useEffect(() => {
-    const loadScreenshots = async () => {
+    const loadData = async () => {
+      // Load screenshots
       const stored = localStorage.getItem(SCREENSHOTS_STORAGE_KEY);
       if (stored) {
         setScreenshots(JSON.parse(stored));
@@ -41,15 +51,29 @@ export default function ScreenshotsPage() {
         setScreenshots(initial);
         localStorage.setItem(SCREENSHOTS_STORAGE_KEY, JSON.stringify(initial));
       }
+
+      // Load image cache
+      const images = localStorage.getItem(SCREENSHOT_IMAGES_KEY);
+      if (images) {
+        setImageCache(JSON.parse(images));
+      }
     };
-    loadScreenshots();
+    loadData();
   }, []);
 
+  // Save screenshots when changed
   useEffect(() => {
     if (screenshots.length > 0) {
       localStorage.setItem(SCREENSHOTS_STORAGE_KEY, JSON.stringify(screenshots));
     }
   }, [screenshots]);
+
+  // Save image cache when changed
+  useEffect(() => {
+    if (Object.keys(imageCache).length > 0) {
+      localStorage.setItem(SCREENSHOT_IMAGES_KEY, JSON.stringify(imageCache));
+    }
+  }, [imageCache]);
 
   const features = Array.from(new Set(screenshots.map(s => s.feature)));
 
@@ -62,7 +86,7 @@ export default function ScreenshotsPage() {
   }, [screenshots, featureFilter, platformFilter]);
 
   const groupedScreenshots = useMemo(() => {
-    const groups: Record<string, Screenshot[]> = {};
+    const groups: Record<string, ScreenshotWithImage[]> = {};
     filteredScreenshots.forEach(ss => {
       if (!groups[ss.feature]) groups[ss.feature] = [];
       groups[ss.feature].push(ss);
@@ -70,21 +94,83 @@ export default function ScreenshotsPage() {
     return groups;
   }, [filteredScreenshots]);
 
-  const handleAddScreenshot = (newScreenshot: Omit<Screenshot, 'id' | 'createdAt'>) => {
+  const handleAddScreenshot = (newScreenshot: Omit<ScreenshotWithImage, 'id' | 'createdAt'>, imageData?: string) => {
     const id = `SS-${String(screenshots.length + 1).padStart(3, '0')}`;
     const now = new Date().toISOString().split('T')[0];
 
-    const screenshot: Screenshot = {
+    const screenshot: ScreenshotWithImage = {
       ...newScreenshot,
       id,
       createdAt: now,
     };
 
     setScreenshots(prev => [screenshot, ...prev]);
+
+    // Save image to cache if provided
+    if (imageData) {
+      setImageCache(prev => ({ ...prev, [id]: imageData }));
+    }
   };
 
+  const handleDeleteScreenshot = (id: string) => {
+    if (confirm('Are you sure you want to delete this screenshot?')) {
+      setScreenshots(prev => prev.filter(s => s.id !== id));
+      setImageCache(prev => {
+        const newCache = { ...prev };
+        delete newCache[id];
+        return newCache;
+      });
+      setSelectedScreenshot(null);
+    }
+  };
+
+  // Global drag and drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(f => f.type.startsWith('image/'));
+
+    if (imageFile) {
+      // Open modal with the dropped image
+      setShowAddModal(true);
+      // Store the file temporarily
+      (window as any).__droppedImageFile = imageFile;
+    }
+  }, []);
+
   return (
-    <div className="space-y-6">
+    <div
+      className="space-y-6 relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag Overlay */}
+      {isDragging && (
+        <div className="fixed inset-0 z-50 bg-dark-bg/90 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-center p-12 border-2 border-dashed border-accent rounded-2xl bg-accent/5">
+            <Upload className="w-16 h-16 text-accent mx-auto mb-4" />
+            <p className="text-xl font-semibold text-zinc-100 mb-2">Drop screenshot here</p>
+            <p className="text-sm text-zinc-500">Release to add new screenshot</p>
+          </div>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -137,19 +223,17 @@ export default function ScreenshotsPage() {
         </div>
       </div>
 
-      {/* Import Instructions */}
+      {/* Drag & Drop Info */}
       <div className="card p-4 border-accent/20 bg-accent/5">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-accent/10 flex-shrink-0">
-            <Info className="w-4 h-4 text-accent" />
+            <Upload className="w-4 h-4 text-accent" />
           </div>
           <div>
-            <h3 className="text-sm font-medium text-zinc-200 mb-2">How to Add Screenshots</h3>
-            <ol className="text-sm text-zinc-400 space-y-1 list-decimal list-inside">
-              <li>Place image files in <code className="code">public/screenshots/[feature]/</code></li>
-              <li>Click &quot;Add Screenshot&quot; button to add metadata</li>
-              <li>The path should match your file location (e.g., /screenshots/auth/login.png)</li>
-            </ol>
+            <h3 className="text-sm font-medium text-zinc-200 mb-1">Drag & Drop</h3>
+            <p className="text-sm text-zinc-400">
+              Simply drag and drop an image anywhere on this page to add a new screenshot.
+            </p>
           </div>
         </div>
       </div>
@@ -170,15 +254,22 @@ export default function ScreenshotsPage() {
                 onClick={() => setSelectedScreenshot(ss)}
               >
                 <div className="aspect-[9/16] bg-dark-bg flex items-center justify-center relative overflow-hidden">
-                  {/* Try to load actual image, fallback to placeholder */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <Smartphone className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
-                      <div className="text-2xs text-zinc-600 font-mono truncate max-w-full px-2">
-                        {ss.path}
+                  {imageCache[ss.id] ? (
+                    <img
+                      src={imageCache[ss.id]}
+                      alt={ss.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center p-4">
+                        <Smartphone className="w-10 h-10 text-zinc-700 mx-auto mb-2" />
+                        <div className="text-2xs text-zinc-600 font-mono truncate max-w-full px-2">
+                          {ss.path}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   {ss.relatedIssueIds && ss.relatedIssueIds.length > 0 && (
                     <div className="absolute top-2 right-2 z-10">
                       <span className="badge badge-error badge-sm flex items-center gap-1">
@@ -187,6 +278,10 @@ export default function ScreenshotsPage() {
                       </span>
                     </div>
                   )}
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <ZoomIn className="w-8 h-8 text-white" />
+                  </div>
                 </div>
                 <div className="p-3">
                   <div className="font-medium text-sm text-zinc-200 mb-2 truncate">
@@ -222,7 +317,7 @@ export default function ScreenshotsPage() {
             <ImageIcon className="empty-state-icon" />
             <p className="empty-state-title">No screenshots found</p>
             <p className="empty-state-description">
-              Try adjusting your filters or add new screenshots
+              Drag and drop an image here to add your first screenshot
             </p>
           </div>
         </div>
@@ -231,9 +326,13 @@ export default function ScreenshotsPage() {
       {/* Add Screenshot Modal */}
       {showAddModal && (
         <AddScreenshotModal
-          onClose={() => setShowAddModal(false)}
+          onClose={() => {
+            setShowAddModal(false);
+            (window as any).__droppedImageFile = null;
+          }}
           onSave={handleAddScreenshot}
           existingFeatures={features}
+          droppedFile={(window as any).__droppedImageFile}
         />
       )}
 
@@ -241,7 +340,9 @@ export default function ScreenshotsPage() {
       {selectedScreenshot && (
         <ScreenshotDetailModal
           screenshot={selectedScreenshot}
+          imageData={imageCache[selectedScreenshot.id]}
           onClose={() => setSelectedScreenshot(null)}
+          onDelete={() => handleDeleteScreenshot(selectedScreenshot.id)}
         />
       )}
     </div>
@@ -253,10 +354,12 @@ function AddScreenshotModal({
   onClose,
   onSave,
   existingFeatures,
+  droppedFile,
 }: {
   onClose: () => void;
-  onSave: (screenshot: Omit<Screenshot, 'id' | 'createdAt'>) => void;
+  onSave: (screenshot: Omit<Screenshot, 'id' | 'createdAt'>, imageData?: string) => void;
   existingFeatures: string[];
+  droppedFile?: File;
 }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -266,28 +369,91 @@ function AddScreenshotModal({
     tags: '',
     notes: '',
   });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Handle dropped file from page
+  useEffect(() => {
+    if (droppedFile) {
+      handleFile(droppedFile);
+    }
+  }, [droppedFile]);
+
+  const handleFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    // Check file size (max 5MB for localStorage)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setImagePreview(result);
+
+      // Auto-fill name from filename
+      if (!formData.name) {
+        const name = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        setFormData(prev => ({ ...prev, name: name.charAt(0).toUpperCase() + name.slice(1) }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.feature.trim() || !formData.path.trim()) {
-      alert('Name, Feature, and Path are required');
+    if (!formData.name.trim() || !formData.feature.trim()) {
+      alert('Name and Feature are required');
+      return;
+    }
+
+    if (!imagePreview) {
+      alert('Please upload an image');
       return;
     }
 
     onSave({
       name: formData.name,
-      path: formData.path,
+      path: formData.path || `/screenshots/${formData.feature.toLowerCase()}/${formData.name.toLowerCase().replace(/\s+/g, '-')}.png`,
       feature: formData.feature,
       platform: formData.platform,
       tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
       notes: formData.notes || undefined,
-    });
+    }, imagePreview);
     onClose();
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal max-w-lg" onClick={(e) => e.stopPropagation()}>
+      <div className="modal max-w-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-status-info/10">
@@ -302,36 +468,64 @@ function AddScreenshotModal({
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body space-y-4">
-            <div>
-              <label className="text-xs font-medium text-zinc-500 block mb-1.5">
-                Name <span className="text-status-error">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="input"
-                placeholder="e.g., Login Screen"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-zinc-500 block mb-1.5">
-                Path <span className="text-status-error">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.path}
-                onChange={(e) => setFormData({ ...formData, path: e.target.value })}
-                className="input font-mono text-sm"
-                placeholder="/screenshots/auth/login.png"
-                required
-              />
-              <p className="text-2xs text-zinc-600 mt-1">Path to image in public folder</p>
+            {/* Image Upload Zone */}
+            <div
+              className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+                isDragging ? 'border-accent bg-accent/10' : 'border-dark-border hover:border-zinc-600'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              {imagePreview ? (
+                <div className="relative">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="max-h-64 mx-auto rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setImagePreview(null)}
+                    className="absolute top-2 right-2 p-1 bg-dark-bg/80 rounded-full hover:bg-dark-hover"
+                  >
+                    <X className="w-4 h-4 text-zinc-400" />
+                  </button>
+                </div>
+              ) : (
+                <div className="py-8">
+                  <Upload className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
+                  <p className="text-sm text-zinc-400 mb-2">
+                    Drag and drop an image here, or{' '}
+                    <label className="text-accent hover:text-accent-light cursor-pointer">
+                      browse
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileInput}
+                        className="hidden"
+                      />
+                    </label>
+                  </p>
+                  <p className="text-xs text-zinc-600">PNG, JPG up to 5MB</p>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">
+                  Name <span className="text-status-error">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="input"
+                  placeholder="e.g., Login Screen"
+                  required
+                />
+              </div>
               <div>
                 <label className="text-xs font-medium text-zinc-500 block mb-1.5">
                   Feature <span className="text-status-error">*</span>
@@ -351,6 +545,9 @@ function AddScreenshotModal({
                   ))}
                 </datalist>
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-medium text-zinc-500 block mb-1.5">Platform</label>
                 <select
@@ -362,19 +559,18 @@ function AddScreenshotModal({
                   <option value="Android">Android</option>
                 </select>
               </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-zinc-500 block mb-1.5">
-                Tags <span className="text-zinc-600">(comma-separated)</span>
-              </label>
-              <input
-                type="text"
-                value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                className="input"
-                placeholder="login, form, authentication"
-              />
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">
+                  Tags <span className="text-zinc-600">(comma-separated)</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.tags}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  className="input"
+                  placeholder="login, form, auth"
+                />
+              </div>
             </div>
 
             <div>
@@ -382,9 +578,9 @@ function AddScreenshotModal({
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="input min-h-[80px] resize-y"
-                placeholder="Additional notes about this screenshot..."
-                rows={3}
+                className="input min-h-[60px] resize-y"
+                placeholder="Additional notes..."
+                rows={2}
               />
             </div>
           </div>
@@ -393,7 +589,7 @@ function AddScreenshotModal({
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" disabled={!imagePreview}>
               <Save className="w-4 h-4" />
               Save Screenshot
             </button>
@@ -407,18 +603,23 @@ function AddScreenshotModal({
 // Screenshot Detail Modal
 function ScreenshotDetailModal({
   screenshot,
+  imageData,
   onClose,
+  onDelete,
 }: {
   screenshot: Screenshot;
+  imageData?: string;
   onClose: () => void;
+  onDelete: () => void;
 }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal max-w-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="modal max-w-3xl" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="flex items-center gap-3">
             <span className="text-sm font-mono text-zinc-500">{screenshot.id}</span>
             <span className="badge badge-info">{screenshot.feature}</span>
+            <span className="badge badge-neutral">{screenshot.platform || 'All'}</span>
           </div>
           <button onClick={onClose} className="btn btn-ghost btn-icon">
             <X className="w-5 h-5" />
@@ -428,17 +629,31 @@ function ScreenshotDetailModal({
         <div className="modal-body">
           <h2 className="text-xl font-semibold text-zinc-100 mb-4">{screenshot.name}</h2>
 
-          <div className="aspect-[9/16] max-w-xs mx-auto bg-dark-bg rounded-lg flex items-center justify-center mb-6">
-            <div className="text-center p-4">
-              <Smartphone className="w-16 h-16 text-zinc-700 mx-auto mb-3" />
-              <code className="text-xs text-zinc-500 block">{screenshot.path}</code>
-            </div>
+          {/* Image Preview */}
+          <div className="bg-dark-bg rounded-xl p-4 mb-6 flex items-center justify-center min-h-[300px]">
+            {imageData ? (
+              <img
+                src={imageData}
+                alt={screenshot.name}
+                className="max-h-[500px] rounded-lg shadow-lg"
+              />
+            ) : (
+              <div className="text-center p-8">
+                <Smartphone className="w-20 h-20 text-zinc-700 mx-auto mb-4" />
+                <code className="text-sm text-zinc-500 block">{screenshot.path}</code>
+                <p className="text-xs text-zinc-600 mt-2">Image not uploaded</p>
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="p-3 bg-dark-bg/50 rounded-lg">
               <span className="text-xs text-zinc-500 block mb-1">Platform</span>
               <span className="text-sm font-medium text-zinc-300">{screenshot.platform || 'All'}</span>
+            </div>
+            <div className="p-3 bg-dark-bg/50 rounded-lg">
+              <span className="text-xs text-zinc-500 block mb-1">Feature</span>
+              <span className="text-sm font-medium text-zinc-300">{screenshot.feature}</span>
             </div>
             <div className="p-3 bg-dark-bg/50 rounded-lg">
               <span className="text-xs text-zinc-500 block mb-1">Created</span>
@@ -466,6 +681,11 @@ function ScreenshotDetailModal({
         </div>
 
         <div className="modal-footer">
+          <button className="btn btn-danger" onClick={onDelete}>
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </button>
+          <div className="flex-1" />
           <button className="btn btn-secondary" onClick={onClose}>
             Close
           </button>
