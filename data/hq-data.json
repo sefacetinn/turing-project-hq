@@ -183,6 +183,16 @@
       "owner": "Dev Team",
       "notes": "Project HQ source code",
       "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-008",
+      "title": "Admin Portal",
+      "url": "https://turing-admin-portal.vercel.app",
+      "category": "Infrastructure",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Turing Admin Panel - Kullanici ve sistem yonetimi",
+      "lastUpdated": "2026-01-31"
     }
   ],
   "decisions": [
@@ -401,6 +411,7 @@
   "quickLinks": [
     { "title": "GitHub Repo", "url": "https://github.com/turing-app/turing", "icon": "github" },
     { "title": "HQ GitHub", "url": "https://github.com/sefacetinn/turing-project-hq", "icon": "github" },
+    { "title": "Admin Portal", "url": "https://turing-admin-portal.vercel.app", "icon": "settings" },
     { "title": "Firebase", "url": "https://console.firebase.google.com/project/turing-app", "icon": "database" },
     { "title": "Turing Website", "url": "https://turingtr.com", "icon": "globe" }
   ],

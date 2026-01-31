@@ -11,6 +11,8 @@ import {
   ShoppingBag,
   Link2,
   Sparkles,
+  Settings,
+  ExternalLink,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,6 +23,10 @@ const navItems = [
   { href: '/architecture', label: 'Architecture', icon: Boxes },
   { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
   { href: '/links', label: 'Links', icon: Link2 },
+];
+
+const externalLinks = [
+  { href: 'https://turing-admin-portal.vercel.app', label: 'Admin Portal', icon: Settings },
 ];
 
 export function Sidebar() {
@@ -67,6 +73,29 @@ export function Sidebar() {
                 </Link>
               );
             })}
+          </div>
+
+          {/* External Links */}
+          <div className="mt-6 pt-6 border-t border-dark-border/50">
+            <p className="px-3 mb-2 text-2xs font-semibold text-zinc-600 uppercase tracking-wider">External</p>
+            <div className="space-y-1">
+              {externalLinks.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nav-item group"
+                  >
+                    <Icon className="nav-item-icon" />
+                    <span>{item.label}</span>
+                    <ExternalLink className="ml-auto w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </a>
+                );
+              })}
+            </div>
           </div>
         </nav>
 
