@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
-import './globals.css';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Turing Project HQ',
-  description: 'Internal project management dashboard for Turing',
+  title: 'Project HQ | Turing Dashboard',
+  description: 'Professional project management dashboard for the Turing platform',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -15,13 +18,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-dark-bg text-white">
-        <div className="flex h-screen">
+      <body className="min-h-screen">
+        <div className="flex min-h-screen">
           <Sidebar />
-          <div className="flex-1 flex flex-col ml-56">
+          <div className="flex-1 ml-64 flex flex-col min-h-screen">
             <Header />
-            <main className="flex-1 overflow-auto p-6">
-              {children}
+            <main className="flex-1 p-6 lg:p-8 overflow-x-hidden">
+              <div className="max-w-7xl mx-auto animate-fade-in">
+                {children}
+              </div>
             </main>
           </div>
         </div>

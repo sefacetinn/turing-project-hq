@@ -4,11 +4,20 @@ import { useState, useMemo } from 'react';
 import hqData from '../../../data/hq-data.json';
 import { IssueModal } from '@/components/IssueModal';
 import type { Issue, IssueStatus, IssuePriority } from '@/types/hq';
+import {
+  Bug,
+  Plus,
+  Filter,
+  Search,
+  Sparkles,
+  AlertTriangle,
+} from 'lucide-react';
 
 export default function IssuesPage() {
   const [statusFilter, setStatusFilter] = useState<IssueStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<IssuePriority | 'all'>('all');
   const [areaFilter, setAreaFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
 
   const issues = hqData.issues as Issue[];
@@ -19,9 +28,15 @@ export default function IssuesPage() {
       if (statusFilter !== 'all' && issue.status !== statusFilter) return false;
       if (priorityFilter !== 'all' && issue.priority !== priorityFilter) return false;
       if (areaFilter !== 'all' && issue.area !== areaFilter) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return issue.title.toLowerCase().includes(q) ||
+          issue.id.toLowerCase().includes(q) ||
+          issue.description?.toLowerCase().includes(q);
+      }
       return true;
     });
-  }, [issues, statusFilter, priorityFilter, areaFilter]);
+  }, [issues, statusFilter, priorityFilter, areaFilter, searchQuery]);
 
   const statusColors: Record<string, string> = {
     backlog: 'badge-neutral',
@@ -38,22 +53,45 @@ export default function IssuesPage() {
   };
 
   return (
-    <div className="max-w-6xl">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Issues & Revisions</h1>
-          <p className="text-gray-400 mt-1">Track bugs, enhancements, and tasks</p>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-status-error/10">
+            <Bug className="w-6 h-6 text-status-error" />
+          </div>
+          <div>
+            <h1 className="page-title">Issues & Revisions</h1>
+            <p className="page-description">Track bugs, enhancements, and tasks</p>
+          </div>
         </div>
         <button className="btn btn-primary">
-          + Add Issue
+          <Plus className="w-4 h-4" />
+          Add Issue
         </button>
       </div>
 
       {/* Filters */}
-      <div className="card p-4 mb-6">
-        <div className="flex flex-wrap items-center gap-4">
+      <div className="card p-4">
+        <div className="flex flex-wrap items-end gap-4">
+          {/* Search */}
+          <div className="flex-1 min-w-[200px] max-w-sm">
+            <label className="text-xs font-medium text-zinc-500 block mb-1.5">Search</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <input
+                type="text"
+                placeholder="Search issues..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input pl-10"
+              />
+            </div>
+          </div>
+
+          {/* Status Filter */}
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Status</label>
+            <label className="text-xs font-medium text-zinc-500 block mb-1.5">Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as IssueStatus | 'all')}
@@ -66,8 +104,10 @@ export default function IssuesPage() {
               <option value="done">Done</option>
             </select>
           </div>
+
+          {/* Priority Filter */}
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Priority</label>
+            <label className="text-xs font-medium text-zinc-500 block mb-1.5">Priority</label>
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value as IssuePriority | 'all')}
@@ -80,8 +120,10 @@ export default function IssuesPage() {
               <option value="P3">P3</option>
             </select>
           </div>
+
+          {/* Area Filter */}
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Area</label>
+            <label className="text-xs font-medium text-zinc-500 block mb-1.5">Area</label>
             <select
               value={areaFilter}
               onChange={(e) => setAreaFilter(e.target.value)}
@@ -93,23 +135,26 @@ export default function IssuesPage() {
               ))}
             </select>
           </div>
-          <div className="ml-auto text-sm text-gray-400">
-            {filteredIssues.length} of {issues.length} issues
+
+          {/* Count */}
+          <div className="ml-auto flex items-center gap-2 text-sm text-zinc-500">
+            <Filter className="w-4 h-4" />
+            <span>{filteredIssues.length} of {issues.length}</span>
           </div>
         </div>
       </div>
 
       {/* Issues Table */}
-      <div className="card overflow-hidden">
-        <table className="w-full">
+      <div className="table-container">
+        <table className="table">
           <thead>
-            <tr className="bg-dark-bg border-b border-dark-border">
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">ID</th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Title</th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Type</th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Priority</th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Status</th>
-              <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-4 py-3">Area</th>
+            <tr>
+              <th className="w-24">ID</th>
+              <th>Title</th>
+              <th className="w-24">Type</th>
+              <th className="w-24">Priority</th>
+              <th className="w-28">Status</th>
+              <th className="w-32">Area</th>
             </tr>
           </thead>
           <tbody>
@@ -117,34 +162,50 @@ export default function IssuesPage() {
               <tr
                 key={issue.id}
                 onClick={() => setSelectedIssue(issue)}
-                className="border-b border-dark-border hover:bg-dark-hover cursor-pointer transition-colors"
+                className="clickable"
               >
-                <td className="px-4 py-3 text-sm font-mono text-gray-400">{issue.id}</td>
-                <td className="px-4 py-3 text-sm font-medium">{issue.title}</td>
-                <td className="px-4 py-3">
+                <td className="font-mono text-zinc-500">{issue.id}</td>
+                <td>
+                  <div className="flex items-center gap-2">
+                    {issue.priority === 'P0' && (
+                      <AlertTriangle className="w-4 h-4 text-status-error flex-shrink-0" />
+                    )}
+                    <span className="font-medium text-zinc-200">{issue.title}</span>
+                  </div>
+                </td>
+                <td>
                   <span className={`badge ${issue.type === 'Bug' ? 'badge-error' : 'badge-info'}`}>
+                    {issue.type === 'Bug' ? (
+                      <Bug className="w-3 h-3" />
+                    ) : (
+                      <Sparkles className="w-3 h-3" />
+                    )}
                     {issue.type}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td>
                   <span className={`badge ${priorityColors[issue.priority]}`}>
                     {issue.priority}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td>
                   <span className={`badge ${statusColors[issue.status]}`}>
                     {issue.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-400">{issue.area}</td>
+                <td className="text-zinc-500">{issue.area}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         {filteredIssues.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            No issues match your filters
+          <div className="empty-state">
+            <Bug className="empty-state-icon" />
+            <p className="empty-state-title">No issues found</p>
+            <p className="empty-state-description">
+              Try adjusting your filters or search query
+            </p>
           </div>
         )}
       </div>
