@@ -1,0 +1,557 @@
+{
+  "meta": {
+    "projectName": "Turing",
+    "version": "1.0.0",
+    "updatedAt": "2026-01-31T18:00:00.000Z",
+    "description": "Etkinlik organizasyonu icin provider-organizer marketplace platformu"
+  },
+  "overview": {
+    "status": "Beta - TestFlight",
+    "currentVersion": "1.0.0",
+    "currentBuild": "24",
+    "activeBranch": "main",
+    "environments": [
+      {"name": "Preview", "url": "", "status": "active"},
+      {"name": "Production", "url": "", "status": "pending"}
+    ],
+    "releaseReadiness": 65,
+    "blockers": [
+      {"id": "B-001", "title": "Tarih formati ISO yerine Turkce olmali", "priority": "P0", "status": "Open"},
+      {"id": "B-002", "title": "Para formati tutarsiz - K kisaltmasi", "priority": "P0", "status": "Open"},
+      {"id": "B-003", "title": "GORUNUM yazim hatasi", "priority": "P1", "status": "Open"}
+    ],
+    "quickLinks": [
+      {"title": "GitHub Repo", "url": "#", "icon": "github"},
+      {"title": "Firebase Console", "url": "#", "icon": "firebase"},
+      {"title": "TestFlight", "url": "#", "icon": "apple"},
+      {"title": "Figma", "url": "#", "icon": "figma"}
+    ],
+    "recentChanges": [
+      "Revizyon raporu olusturuldu (59 ekran)",
+      "TestFlight Build #24 gonderildi",
+      "Sprint 1 baslatildi"
+    ]
+  },
+  "product": {
+    "summary": "Turing, etkinlik organizatorleri ile hizmet saglayicilari (DJ, fotografci, catering vb.) bulusturan bir B2B marketplace platformudur. Organizatorler etkinlik olusturur, uygun saglayicilari bulur ve teklif alir. Saglayicilar hizmetlerini sergiler, tekliflere yanit verir ve odemelerini platform uzerinden alir.",
+    "targetUsers": [
+      {"role": "Organizer", "description": "Etkinlik duzenleyen kisiler veya firmalar"},
+      {"role": "Provider", "description": "Hizmet saglayan kisiler veya firmalar (DJ, foto, catering vs)"},
+      {"role": "Admin", "description": "Platform yoneticileri"}
+    ],
+    "modules": [
+      {
+        "name": "Marketplace",
+        "description": "Hizmet kategorileri ve provider listeleme",
+        "screens": ["ServiceCategoriesScreen", "ServiceProvidersScreen", "ProviderDetailScreen"]
+      },
+      {
+        "name": "Events",
+        "description": "Etkinlik olusturma ve yonetimi",
+        "screens": ["CreateEventScreen", "EventDetailScreen", "MyEventsScreen"]
+      },
+      {
+        "name": "Offers",
+        "description": "Teklif gonderme, alma ve karsilastirma",
+        "screens": ["SendOfferScreen", "OffersScreen", "OfferDetailScreen", "CompareOffersScreen"]
+      },
+      {
+        "name": "Payments",
+        "description": "Odeme isleme ve finans takibi",
+        "screens": ["PaymentMethodsScreen", "ProviderFinanceScreen"]
+      },
+      {
+        "name": "Messaging",
+        "description": "Kullanici arasi mesajlasma",
+        "screens": ["MessagesScreen", "ChatScreen"]
+      },
+      {
+        "name": "Team Management",
+        "description": "Firma ve ekip yonetimi",
+        "screens": ["TeamScreen", "InviteMemberScreen", "CrewManagementScreen"]
+      }
+    ],
+    "flows": [
+      {
+        "name": "Ana Akis",
+        "steps": ["Organizer kayit", "Etkinlik olustur", "Provider ara", "Teklif al", "Teklif kabul et", "Odeme yap", "Etkinlik tamamla", "Degerlendirme yap"]
+      },
+      {
+        "name": "Provider Akisi",
+        "steps": ["Provider kayit", "Profil olustur", "Hizmet ekle", "Teklif al", "Teklif gonder", "Is tamamla", "Odeme al"]
+      }
+    ]
+  },
+  "roles": {
+    "accountModel": "Firma hesabi (Organization) + Kisi profili (User) ayrimi. Bir kullanici birden fazla firmada calismak uzere davet edilebilir.",
+    "roles": [
+      {"name": "platform_admin", "description": "Tum sisteme erisim, kullanici/firma yonetimi"},
+      {"name": "org_owner", "description": "Firma sahibi, tum firma islemleri"},
+      {"name": "org_admin", "description": "Firma yoneticisi, uye yonetimi haric tum islemler"},
+      {"name": "org_member", "description": "Firma uyesi, atanan gorevler"},
+      {"name": "provider_owner", "description": "Saglayici firma sahibi"},
+      {"name": "provider_member", "description": "Saglayici ekip uyesi"},
+      {"name": "user", "description": "Standart kullanici (henuz firma yok)"}
+    ],
+    "permissionsMatrix": [
+      {"resource": "events.create", "platform_admin": true, "org_owner": true, "org_admin": true, "org_member": false, "provider_owner": false},
+      {"resource": "events.view_own", "platform_admin": true, "org_owner": true, "org_admin": true, "org_member": true, "provider_owner": true},
+      {"resource": "offers.send", "platform_admin": true, "org_owner": true, "org_admin": true, "org_member": false, "provider_owner": true},
+      {"resource": "offers.respond", "platform_admin": true, "org_owner": false, "org_admin": false, "org_member": false, "provider_owner": true},
+      {"resource": "payments.view", "platform_admin": true, "org_owner": true, "org_admin": true, "org_member": false, "provider_owner": true},
+      {"resource": "team.manage", "platform_admin": true, "org_owner": true, "org_admin": false, "org_member": false, "provider_owner": true},
+      {"resource": "settings.edit", "platform_admin": true, "org_owner": true, "org_admin": true, "org_member": false, "provider_owner": true}
+    ],
+    "visibility": {
+      "marketplace": "Platform geneli - tum providerlar gorunur",
+      "privateServices": "Sadece davet edilen organizasyonlar gorebilir",
+      "internalTeam": "Sadece firma uyeleri gorebilir"
+    }
+  },
+  "architecture": {
+    "overview": "Monorepo yapisi: React Native (Expo) mobil app + Firebase backend + Next.js admin portal",
+    "directories": [
+      {"path": "src/", "description": "Ana React Native kaynak kodu"},
+      {"path": "src/screens/", "description": "Ekran componentleri"},
+      {"path": "src/components/", "description": "Yeniden kullanilabilir componentler"},
+      {"path": "src/services/", "description": "API ve Firebase servisleri"},
+      {"path": "src/hooks/", "description": "Custom React hooks"},
+      {"path": "src/utils/", "description": "Yardimci fonksiyonlar"},
+      {"path": "src/i18n/", "description": "Coklu dil dosyalari"},
+      {"path": "src/store/", "description": "State management (Zustand/Context)"},
+      {"path": "functions/", "description": "Firebase Cloud Functions"},
+      {"path": "webhook-server/", "description": "Iyzico webhook handler"},
+      {"path": "admin/", "description": "Next.js admin portal"},
+      {"path": "ios/", "description": "iOS native kodu"}
+    ],
+    "frontendBackendBoundary": "Firebase SDK uzerinden Firestore + Cloud Functions. REST API webhook-server uzerinden.",
+    "offlineSupport": "WatermelonDB ile secili veriler offline cache'lenir (events, messages)",
+    "observability": {
+      "errorTracking": "Sentry",
+      "analytics": "Firebase Analytics",
+      "crashReporting": "Firebase Crashlytics",
+      "diagnostics": "Custom diagnostics service"
+    }
+  },
+  "tech": {
+    "stack": [
+      {"name": "React Native", "version": "0.74.x", "notes": "Expo managed workflow"},
+      {"name": "Expo", "version": "~51.0.0", "notes": "SDK 51"},
+      {"name": "TypeScript", "version": "5.x", "notes": ""},
+      {"name": "Firebase", "version": "10.x", "notes": "Modular SDK"},
+      {"name": "Next.js", "version": "14.x", "notes": "Admin portal icin"}
+    ],
+    "sdks": [
+      {"name": "Firebase Auth", "purpose": "Kimlik dogrulama"},
+      {"name": "Firebase Firestore", "purpose": "NoSQL veritabani"},
+      {"name": "Firebase Storage", "purpose": "Dosya depolama"},
+      {"name": "Firebase Cloud Functions", "purpose": "Serverless backend"},
+      {"name": "Firebase Cloud Messaging", "purpose": "Push notifications"},
+      {"name": "Iyzico SDK", "purpose": "Odeme isleme"},
+      {"name": "Expo Notifications", "purpose": "Local + push notifications"},
+      {"name": "Expo Image Picker", "purpose": "Gorsel secme"},
+      {"name": "React Navigation", "purpose": "Navigasyon"},
+      {"name": "Zustand", "purpose": "State management"},
+      {"name": "WatermelonDB", "purpose": "Offline database"},
+      {"name": "Sentry", "purpose": "Error tracking"}
+    ],
+    "envKeys": [
+      "EXPO_PUBLIC_FIREBASE_API_KEY",
+      "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN",
+      "EXPO_PUBLIC_FIREBASE_PROJECT_ID",
+      "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET",
+      "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
+      "EXPO_PUBLIC_FIREBASE_APP_ID",
+      "EXPO_PUBLIC_IYZICO_API_KEY",
+      "EXPO_PUBLIC_IYZICO_SECRET_KEY",
+      "EXPO_PUBLIC_IYZICO_BASE_URL",
+      "EXPO_PUBLIC_SENTRY_DSN",
+      "EXPO_PUBLIC_ENABLE_MULTI_TENANT",
+      "EXPO_PUBLIC_ENABLE_PAYMENTS",
+      "EXPO_PUBLIC_API_URL"
+    ]
+  },
+  "firebase": {
+    "projectId": "turing-app",
+    "collections": [
+      {"name": "users", "description": "Kullanici profilleri", "indexes": ["email", "createdAt"]},
+      {"name": "organizations", "description": "Firma/organizasyon kayitlari", "indexes": ["ownerId", "type", "createdAt"]},
+      {"name": "memberships", "description": "Kullanici-firma iliskileri", "indexes": ["userId", "organizationId", "role"]},
+      {"name": "services", "description": "Saglayici hizmetleri", "indexes": ["providerId", "category", "isActive"]},
+      {"name": "events", "description": "Etkinlikler", "indexes": ["organizerId", "status", "date"]},
+      {"name": "offers", "description": "Teklifler", "indexes": ["eventId", "providerId", "status"]},
+      {"name": "messages", "description": "Mesajlar", "indexes": ["conversationId", "createdAt"]},
+      {"name": "conversations", "description": "Mesaj konusmalar", "indexes": ["participants", "lastMessageAt"]},
+      {"name": "payments", "description": "Odeme kayitlari", "indexes": ["userId", "status", "createdAt"]},
+      {"name": "notifications", "description": "Bildirimler", "indexes": ["userId", "isRead", "createdAt"]}
+    ],
+    "rulesNotes": "users: sadece kendi profiline yazabilir. organizations: owner veya admin yazabilir. offers: event owner veya provider yazabilir.",
+    "indexes": [
+      "offers: eventId ASC, createdAt DESC",
+      "messages: conversationId ASC, createdAt ASC",
+      "services: category ASC, rating DESC"
+    ],
+    "commonErrors": [
+      {"code": "permission-denied", "cause": "Firestore rules izin vermiyor", "fix": "Kullanici rolunu ve rules'u kontrol et"},
+      {"code": "requires-index", "cause": "Composite index eksik", "fix": "Firebase console'dan index olustur"},
+      {"code": "quota-exceeded", "cause": "Gunluk limit asildi", "fix": "Billing plan'i kontrol et"}
+    ],
+    "featureFlags": [
+      {"key": "ENABLE_MULTI_TENANT", "description": "Coklu organizasyon destegi", "default": false},
+      {"key": "ENABLE_PAYMENTS", "description": "Odeme sistemi aktif", "default": true},
+      {"key": "ENABLE_OFFLINE_MODE", "description": "Offline calisma", "default": false},
+      {"key": "USE_NEW_MARKETPLACE_API", "description": "Yeni marketplace API", "default": true}
+    ],
+    "debugRecipes": [
+      {"name": "Permission hatasi debug", "steps": ["1. Sentry'de hatali request'i bul", "2. userId ve resource'u al", "3. Firestore rules simulator'da test et"]},
+      {"name": "Index hatasi", "steps": ["1. Console'da hata mesajini bul", "2. Onerilen index linkine tikla", "3. Index'i olustur (5-10 dk bekle)"]}
+    ]
+  },
+  "payments": {
+    "provider": "iyzico",
+    "environment": "sandbox",
+    "flow": [
+      {"step": 1, "action": "Kullanici odeme baslatir", "endpoint": "POST /api/payments/init"},
+      {"step": 2, "action": "Iyzico checkout form gosterilir", "endpoint": "Iyzico SDK"},
+      {"step": 3, "action": "Kullanici odemeyi tamamlar", "endpoint": "Iyzico redirect"},
+      {"step": 4, "action": "Webhook ile onay alinir", "endpoint": "POST /webhook/iyzico"},
+      {"step": 5, "action": "Payment durumu guncellenir", "endpoint": "Firestore update"}
+    ],
+    "plans": [
+      {"name": "FREE", "price": 0, "features": ["5 etkinlik/ay", "Temel ozellikler"], "commission": "15%"},
+      {"name": "PRO", "price": 99, "features": ["Sinirsiz etkinlik", "Oncelikli destek"], "commission": "10%"},
+      {"name": "PREMIUM", "price": 299, "features": ["Tum ozellikler", "Ozel entegrasyonlar"], "commission": "5%"}
+    ],
+    "riskNotes": [
+      "Apple/Google digital services policy'sine dikkat",
+      "In-app purchase vs external payment karari",
+      "Turkiye'de odeme kurulusu lisansi gereklilikleri"
+    ],
+    "testCards": [
+      {"type": "Success", "number": "5528790000000008", "expiry": "12/30", "cvv": "123"},
+      {"type": "Fail", "number": "5400010000000004", "expiry": "12/30", "cvv": "123"}
+    ]
+  },
+  "adminPortal": {
+    "framework": "Next.js 14 + Tailwind CSS",
+    "routes": [
+      {"path": "/dashboard", "description": "Ana dashboard, istatistikler"},
+      {"path": "/users", "description": "Kullanici listesi ve yonetimi"},
+      {"path": "/organizations", "description": "Firma listesi ve yonetimi"},
+      {"path": "/events", "description": "Etkinlik listesi ve moderasyon"},
+      {"path": "/payments", "description": "Odeme gecmisi ve raporlar"},
+      {"path": "/support", "description": "Destek talepleri"},
+      {"path": "/settings", "description": "Platform ayarlari"},
+      {"path": "/feature-flags", "description": "Feature flag yonetimi"}
+    ],
+    "permissions": [
+      "platform_admin: Tum sayfalara erisim",
+      "support_agent: users, organizations, support sayfalari",
+      "finance: payments sayfasi"
+    ],
+    "supportOperations": [
+      "Kullanici hesabini deaktive et/aktive et",
+      "Organizasyon durumunu degistir",
+      "Odeme iadesi baslat",
+      "Kullanici adina islem yap (impersonate)"
+    ]
+  },
+  "qa": {
+    "legacyReportPath": "../revizyon_raporu.html",
+    "screenshotFolders": ["Auth", "Ana", "Provider", "Organizator", "Ayarlar", "Diger"],
+    "testDevices": [
+      {"name": "iPhone 15 Pro", "os": "iOS 17.4", "resolution": "1179x2556"},
+      {"name": "iPhone SE", "os": "iOS 17.4", "resolution": "750x1334"},
+      {"name": "iPad Pro 12.9", "os": "iPadOS 17.4", "resolution": "2048x2732"},
+      {"name": "Samsung S23", "os": "Android 14", "resolution": "1080x2340"},
+      {"name": "Pixel 7", "os": "Android 14", "resolution": "1080x2400"}
+    ],
+    "testCases": [
+      {"id": "TC-001", "category": "Auth", "title": "Email ile kayit", "steps": ["1. Register ekranina git", "2. Email ve sifre gir", "3. Kayit ol butonuna tikla"], "expected": "Basarili kayit, ana sayfaya yonlendir", "priority": "P0"},
+      {"id": "TC-002", "category": "Auth", "title": "Google ile giris", "steps": ["1. Login ekranina git", "2. Google ile giris butonuna tikla", "3. Google hesabi sec"], "expected": "Basarili giris", "priority": "P0"},
+      {"id": "TC-003", "category": "Events", "title": "Etkinlik olusturma", "steps": ["1. Dashboard'dan Etkinlik Olustur tikla", "2. Formu doldur", "3. Kaydet"], "expected": "Etkinlik kaydedilir ve listede gorunur", "priority": "P0"},
+      {"id": "TC-004", "category": "Offers", "title": "Teklif gonderme", "steps": ["1. Provider detay sayfasina git", "2. Teklif iste tikla", "3. Detaylari gir ve gonder"], "expected": "Teklif gonderilir, provider'a bildirim gider", "priority": "P0"},
+      {"id": "TC-005", "category": "Payments", "title": "Odeme tamamlama", "steps": ["1. Kabul edilen teklifi ac", "2. Odeme yap tikla", "3. Kart bilgilerini gir"], "expected": "Odeme basarili, onay ekrani", "priority": "P0"}
+    ],
+    "releaseChecklist": [
+      {"item": "Tum P0 test case'ler gecti", "status": "pending"},
+      {"item": "Regression test tamamlandi", "status": "pending"},
+      {"item": "Performance test (3G network)", "status": "pending"},
+      {"item": "Accessibility check", "status": "pending"},
+      {"item": "Localization review", "status": "pending"}
+    ]
+  },
+  "issues": [
+    {
+      "id": "ISS-0001",
+      "title": "Tarih formati ISO yerine Turkce olmali",
+      "type": "Bug",
+      "severity": "High",
+      "priority": "P0",
+      "status": "Backlog",
+      "area": "Localization",
+      "screen": "All Screens",
+      "description": "Tum ekranlarda tarihler '2026-03-20' formatinda gosteriliyor. '20 Mart 2026' seklinde Turkce olmali.",
+      "rootCause": "Date formatter Turkce locale kullanmiyor",
+      "fixApproach": "formatDate util fonksiyonuna tr-TR locale ekle",
+      "files": ["src/utils/dateFormatter.ts"],
+      "assignee": "",
+      "sprintId": "SPRINT-001",
+      "createdAt": "2026-01-30",
+      "updatedAt": "2026-01-31"
+    },
+    {
+      "id": "ISS-0002",
+      "title": "Para formati tutarsiz - K kisaltmasi anlasilmiyor",
+      "type": "Bug",
+      "severity": "High",
+      "priority": "P0",
+      "status": "Backlog",
+      "area": "Localization",
+      "screen": "ProviderDashboardScreen",
+      "description": "TL4772K yerine TL4.772.000 veya 4,77M TL kullanilmali",
+      "rootCause": "formatCurrency fonksiyonu tutarsiz",
+      "fixApproach": "Tek bir para format standardi belirle",
+      "files": ["src/utils/currencyFormatter.ts"],
+      "assignee": "",
+      "sprintId": "SPRINT-001",
+      "createdAt": "2026-01-30",
+      "updatedAt": "2026-01-31"
+    },
+    {
+      "id": "ISS-0003",
+      "title": "GORUNUM yazim hatasi",
+      "type": "Bug",
+      "severity": "High",
+      "priority": "P1",
+      "status": "Backlog",
+      "area": "UI",
+      "screen": "SettingsScreen",
+      "description": "Settings ekraninda 'GORUNUM' yerine 'GORUNTUM' veya Turkce karakterli olmali",
+      "rootCause": "Hardcoded string",
+      "fixApproach": "i18n dosyasini duzelt",
+      "files": ["src/i18n/tr.json"],
+      "assignee": "",
+      "sprintId": "SPRINT-001",
+      "createdAt": "2026-01-30",
+      "updatedAt": "2026-01-31"
+    },
+    {
+      "id": "ISS-0004",
+      "title": "Private yerine Ozel yazilmali",
+      "type": "Bug",
+      "severity": "High",
+      "priority": "P1",
+      "status": "Backlog",
+      "area": "Localization",
+      "screen": "CreateEventScreen",
+      "description": "Etkinlik olusturma ekraninda 'Private' Ingilizce kalmis",
+      "rootCause": "i18n eksik",
+      "fixApproach": "Turkce cevirisi ekle",
+      "files": ["src/i18n/tr.json"],
+      "assignee": "",
+      "sprintId": "",
+      "createdAt": "2026-01-30",
+      "updatedAt": "2026-01-31"
+    }
+  ],
+  "sprints": [
+    {
+      "id": "SPRINT-001",
+      "name": "Sprint 1 - Localization & Critical Fixes",
+      "goal": "Tum tarih/para formatlarini duzelt, yazim hatalarini gider",
+      "startDate": "2026-02-01",
+      "endDate": "2026-02-14",
+      "status": "Active",
+      "issueIds": ["ISS-0001", "ISS-0002", "ISS-0003"],
+      "dod": [
+        {"text": "Tum tarihler Turkce formatta", "done": false},
+        {"text": "Para formati tutarli", "done": false},
+        {"text": "Yazim hatalari duzeltildi", "done": false},
+        {"text": "QA onayladi", "done": false}
+      ],
+      "risks": [
+        {"description": "Locale degisikligi baska alanlari etkileyebilir", "mitigation": "Kapsamli regression test"}
+      ]
+    }
+  ],
+  "builds": [
+    {
+      "id": "BUILD-001",
+      "buildNumber": "24",
+      "version": "1.0.0",
+      "channel": "TestFlight",
+      "platform": "iOS",
+      "runtimeVersion": "1.0.0",
+      "gitCommit": "abc123def",
+      "gitBranch": "main",
+      "date": "2026-01-30",
+      "expiresAt": "2026-04-30",
+      "notes": "Initial TestFlight build\n- Tum ana ozellikler mevcut\n- Bilinen sorunlar: tarih/para formati",
+      "knownIssueIds": ["ISS-0001", "ISS-0002", "ISS-0003"],
+      "status": "Submitted",
+      "downloadUrl": ""
+    },
+    {
+      "id": "BUILD-002",
+      "buildNumber": "1",
+      "version": "1.0.0",
+      "channel": "Internal Testing",
+      "platform": "Android",
+      "runtimeVersion": "1.0.0",
+      "gitCommit": "abc123def",
+      "gitBranch": "main",
+      "date": "2026-01-30",
+      "expiresAt": "",
+      "notes": "Initial Android internal test build",
+      "knownIssueIds": ["ISS-0001", "ISS-0002", "ISS-0003"],
+      "status": "Available",
+      "downloadUrl": ""
+    }
+  ],
+  "compliance": {
+    "apple": {
+      "appStoreStatus": "Not Submitted",
+      "lastReviewDate": "",
+      "checklist": [
+        {"id": "ASC-001", "item": "App Screenshots (6.7\", 6.5\", 5.5\")", "status": "pending", "notes": ""},
+        {"id": "ASC-002", "item": "App Privacy Policy URL", "status": "done", "notes": "https://turing.app/privacy"},
+        {"id": "ASC-003", "item": "Demo Account Credentials", "status": "pending", "notes": "demo@turing.app / Demo123!"},
+        {"id": "ASC-004", "item": "App Tracking Transparency (ATT)", "status": "done", "notes": "Implemented, no tracking"},
+        {"id": "ASC-005", "item": "In-App Purchase Configuration", "status": "pending", "notes": "Subscription plans"},
+        {"id": "ASC-006", "item": "App Description & Keywords", "status": "pending", "notes": ""},
+        {"id": "ASC-007", "item": "What's New Text", "status": "pending", "notes": ""},
+        {"id": "ASC-008", "item": "Review Notes", "status": "pending", "notes": ""},
+        {"id": "ASC-009", "item": "Export Compliance (ECCN)", "status": "done", "notes": "Uses HTTPS only, no custom encryption"},
+        {"id": "ASC-010", "item": "Age Rating Questionnaire", "status": "pending", "notes": ""},
+        {"id": "ASC-011", "item": "Content Rights", "status": "done", "notes": "All content user-generated or owned"},
+        {"id": "ASC-012", "item": "Sign in with Apple", "status": "done", "notes": "Implemented"}
+      ],
+      "privacyNutritionLabels": [
+        {"category": "Contact Info", "collected": true, "purpose": "App Functionality", "linked": true},
+        {"category": "Identifiers", "collected": true, "purpose": "App Functionality", "linked": true},
+        {"category": "Usage Data", "collected": true, "purpose": "Analytics", "linked": false}
+      ]
+    },
+    "googlePlay": {
+      "playStoreStatus": "Not Submitted",
+      "lastReviewDate": "",
+      "checklist": [
+        {"id": "GP-001", "item": "Store Listing Graphics", "status": "pending", "notes": "Feature graphic 1024x500"},
+        {"id": "GP-002", "item": "Data Safety Form", "status": "pending", "notes": ""},
+        {"id": "GP-003", "item": "Privacy Policy URL", "status": "done", "notes": "https://turing.app/privacy"},
+        {"id": "GP-004", "item": "Target Audience & Content", "status": "pending", "notes": "18+"},
+        {"id": "GP-005", "item": "App Access (Demo Account)", "status": "pending", "notes": ""},
+        {"id": "GP-006", "item": "Ads Declaration", "status": "done", "notes": "No ads"},
+        {"id": "GP-007", "item": "Target SDK Version", "status": "done", "notes": "targetSdk 34"},
+        {"id": "GP-008", "item": "Permissions Declaration", "status": "pending", "notes": "Camera, Location, Notifications"}
+      ],
+      "dataSafetyForm": {
+        "dataCollected": ["Name", "Email", "Phone", "Location", "Photos"],
+        "dataShared": ["None"],
+        "securityPractices": ["Data encrypted in transit", "Data can be deleted"]
+      }
+    },
+    "rejections": []
+  },
+  "links": [
+    {
+      "id": "LINK-001",
+      "title": "GitHub Repository",
+      "url": "https://github.com/turing-app/turing",
+      "category": "Repository",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Main monorepo",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-002",
+      "title": "Firebase Console",
+      "url": "https://console.firebase.google.com/project/turing-app",
+      "category": "Infrastructure",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Production Firebase project",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-003",
+      "title": "Figma Designs",
+      "url": "https://figma.com/file/xxx",
+      "category": "Design",
+      "type": "external",
+      "owner": "Design Team",
+      "notes": "UI/UX tasarimlari",
+      "lastUpdated": "2026-01-25"
+    },
+    {
+      "id": "LINK-004",
+      "title": "Sentry Dashboard",
+      "url": "https://sentry.io/organizations/turing/",
+      "category": "Infrastructure",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "Error tracking",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-005",
+      "title": "Revizyon Raporu (Legacy)",
+      "url": "../revizyon_raporu.html",
+      "category": "Documentation",
+      "type": "local",
+      "owner": "QA Team",
+      "notes": "Screenshot bazli revizyon raporu",
+      "lastUpdated": "2026-01-31"
+    },
+    {
+      "id": "LINK-006",
+      "title": "TestFlight",
+      "url": "https://appstoreconnect.apple.com/apps/xxx/testflight",
+      "category": "Distribution",
+      "type": "external",
+      "owner": "Dev Team",
+      "notes": "iOS beta distribution",
+      "lastUpdated": "2026-01-30"
+    },
+    {
+      "id": "LNK-0002",
+      "title": "Turing Resmî Web Sitesi",
+      "url": "https://turingtr.com/",
+      "category": "Website",
+      "type": "external",
+      "owner": "Turing",
+      "notes": "Turing'in genel tanıtım sitesi. Ürün anlatımı, marka vitrini ve dış referans noktası.",
+      "lastUpdated": "2026-01-31"
+    }
+  ],
+  "changelog": [
+    {
+      "id": "CL-001",
+      "date": "2026-01-31",
+      "version": "1.0.0",
+      "title": "Project HQ Olusturuldu",
+      "description": "Proje dokumantasyonu tek bir yerde toplandi",
+      "changes": [
+        "Project HQ web sayfasi olusturuldu",
+        "Tum proje bilgileri JSON formatinda duzenlendi",
+        "15 ana bolum tanimlandi"
+      ],
+      "issueIds": []
+    },
+    {
+      "id": "CL-002",
+      "date": "2026-01-30",
+      "version": "1.0.0",
+      "title": "TestFlight Build #24",
+      "description": "Ilk TestFlight build'i gonderildi",
+      "changes": [
+        "iOS build #24 TestFlight'a yuklendi",
+        "Tum ana ozellikler mevcut",
+        "Bilinen sorunlar dokumante edildi"
+      ],
+      "issueIds": ["ISS-0001", "ISS-0002", "ISS-0003"]
+    }
+  ]
+}

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turing Project HQ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">T</div>
+          <div class="sidebar-logo-text">Project HQ</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core</div>
+        <div class="nav-item active" data-tab="overview">
+          <span class="nav-icon">&#127968;</span>
+          <span>Overview</span>
+        </div>
+        <div class="nav-item" data-tab="product">
+          <span class="nav-icon">&#128640;</span>
+          <span>Product & Logic</span>
+        </div>
+        <div class="nav-item" data-tab="roles">
+          <span class="nav-icon">&#128101;</span>
+          <span>Roles & Permissions</span>
+        </div>
+
+        <div class="nav-section-title">Technical</div>
+        <div class="nav-item" data-tab="architecture">
+          <span class="nav-icon">&#127959;</span>
+          <span>Architecture</span>
+        </div>
+        <div class="nav-item" data-tab="tech">
+          <span class="nav-icon">&#128187;</span>
+          <span>Tech Stack</span>
+        </div>
+        <div class="nav-item" data-tab="firebase">
+          <span class="nav-icon">&#128293;</span>
+          <span>Firebase & Security</span>
+        </div>
+        <div class="nav-item" data-tab="payments">
+          <span class="nav-icon">&#128179;</span>
+          <span>Payments</span>
+        </div>
+        <div class="nav-item" data-tab="admin">
+          <span class="nav-icon">&#128736;</span>
+          <span>Admin Portal</span>
+        </div>
+
+        <div class="nav-section-title">Quality</div>
+        <div class="nav-item" data-tab="qa">
+          <span class="nav-icon">&#128247;</span>
+          <span>QA / Screenshots</span>
+        </div>
+        <div class="nav-item" data-tab="backlog">
+          <span class="nav-icon">&#128203;</span>
+          <span>Backlog & Sprint</span>
+          <span class="nav-badge" id="issues-badge">0</span>
+        </div>
+
+        <div class="nav-section-title">Release</div>
+        <div class="nav-item" data-tab="builds">
+          <span class="nav-icon">&#128230;</span>
+          <span>Builds & Releases</span>
+        </div>
+        <div class="nav-item" data-tab="compliance">
+          <span class="nav-icon">&#9989;</span>
+          <span>Store Compliance</span>
+        </div>
+
+        <div class="nav-section-title">Resources</div>
+        <div class="nav-item" data-tab="links">
+          <span class="nav-icon">&#128279;</span>
+          <span>Docs & Links</span>
+        </div>
+        <div class="nav-item" data-tab="changelog">
+          <span class="nav-icon">&#128221;</span>
+          <span>Changelog</span>
+        </div>
+        <div class="nav-item" data-tab="export">
+          <span class="nav-icon">&#128190;</span>
+          <span>Export</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-item">
+          <span id="last-saved">Last saved: --</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="main-header">
+        <h1 class="header-title" id="page-title">Overview</h1>
+        <div class="header-center">
+          <div class="search-wrapper">
+            <input type="text" id="global-search" class="search-input" placeholder="Search issues, screenshots, links...">
+            <div id="search-dropdown" class="search-dropdown"></div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <span id="dirty-indicator" class="dirty-indicator" style="display: none;">● Unsaved</span>
+          <span id="last-saved" class="last-saved">Last: --</span>
+          <button id="btn-save" class="btn btn-primary">💾 Save</button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- 1. Overview Panel -->
+        <div id="panel-overview" class="tab-panel active">
+          <div class="overview-grid">
+            <div class="overview-card status-card">
+              <div class="card-header">
+                <h3>Project Status</h3>
+                <span class="status-badge" id="project-status">Beta</span>
+              </div>
+              <div class="card-body">
+                <div class="status-row">
+                  <span>Version:</span>
+                  <strong id="current-version">1.0.0</strong>
+                </div>
+                <div class="status-row">
+                  <span>Build:</span>
+                  <strong id="current-build">#24</strong>
+                </div>
+                <div class="status-row">
+                  <span>Branch:</span>
+                  <code id="active-branch">main</code>
+                </div>
+                <div class="progress-section">
+                  <div class="progress-label">
+                    <span>Release Readiness</span>
+                    <span id="readiness-pct">65%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" id="readiness-bar" style="width: 65%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="overview-card blockers-card">
+              <div class="card-header">
+                <h3>&#128680; Blockers</h3>
+                <span class="count-badge" id="blockers-count">0</span>
+              </div>
+              <div class="card-body">
+                <ul class="blockers-list" id="blockers-list"></ul>
+              </div>
+            </div>
+
+            <div class="overview-card quicklinks-card">
+              <div class="card-header">
+                <h3>&#9889; Quick Links</h3>
+              </div>
+              <div class="card-body">
+                <div class="quicklinks-grid" id="quicklinks-grid"></div>
+              </div>
+            </div>
+
+            <div class="overview-card recent-card">
+              <div class="card-header">
+                <h3>&#128197; Recent Changes</h3>
+              </div>
+              <div class="card-body">
+                <ul class="recent-list" id="recent-list"></ul>
+              </div>
+            </div>
+
+            <div class="overview-card environments-card">
+              <div class="card-header">
+                <h3>&#127760; Environments</h3>
+              </div>
+              <div class="card-body">
+                <div class="env-list" id="env-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Product Panel -->
+        <div id="panel-product" class="tab-panel">
+          <div class="section-card">
+            <h2>What is Turing?</h2>
+            <p class="summary-text" id="product-summary"></p>
+          </div>
+
+          <div class="section-card">
+            <h2>Target Users</h2>
+            <div class="users-grid" id="target-users"></div>
+          </div>
+
+          <div class="section-card">
+            <h2>Core Modules</h2>
+            <div class="modules-grid" id="modules-grid"></div>
+          </div>
+
+          <div class="section-card">
+            <h2>User Flows</h2>
+            <div id="flows-container"></div>
+          </div>
+        </div>
+
+        <!-- 3. Roles Panel -->
+        <div id="panel-roles" class="tab-panel">
+          <div class="section-card">
+            <h2>Account Model</h2>
+            <p id="account-model"></p>
+          </div>
+
+          <div class="section-card">
+            <h2>Roles</h2>
+            <div class="roles-list" id="roles-list"></div>
+          </div>
+
+          <div class="section-card">
+            <h2>Permissions Matrix</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="permissions-table">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Visibility Rules</h2>
+            <div id="visibility-rules"></div>
+          </div>
+        </div>
+
+        <!-- 4. Architecture Panel -->
+        <div id="panel-architecture" class="tab-panel">
+          <div class="section-card">
+            <h2>Overview</h2>
+            <p id="arch-overview"></p>
+          </div>
+
+          <div class="section-card">
+            <h2>Directory Structure</h2>
+            <div class="directory-tree" id="directory-tree"></div>
+          </div>
+
+          <div class="section-card">
+            <h2>Frontend/Backend Boundary</h2>
+            <p id="boundary-notes"></p>
+          </div>
+
+          <div class="section-card">
+            <h2>Observability</h2>
+            <div class="observability-grid" id="observability-grid"></div>
+          </div>
+        </div>
+
+        <!-- 5. Tech Stack Panel -->
+        <div id="panel-tech" class="tab-panel">
+          <div class="section-card">
+            <h2>Core Stack</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="stack-table">
+                <thead>
+                  <tr>
+                    <th>Technology</th>
+                    <th>Version</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>SDKs & Services</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="sdks-table">
+                <thead>
+                  <tr>
+                    <th>SDK</th>
+                    <th>Purpose</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Environment Variables</h2>
+            <div class="env-keys-list" id="env-keys-list"></div>
+          </div>
+        </div>
+
+        <!-- 6. Firebase Panel -->
+        <div id="panel-firebase" class="tab-panel">
+          <div class="section-card">
+            <h2>Collections</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="collections-table">
+                <thead>
+                  <tr>
+                    <th>Collection</th>
+                    <th>Description</th>
+                    <th>Indexes</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Security Rules Notes</h2>
+            <pre class="code-block" id="rules-notes"></pre>
+          </div>
+
+          <div class="section-card">
+            <h2>Common Errors & Fixes</h2>
+            <div class="errors-list" id="firebase-errors"></div>
+          </div>
+
+          <div class="section-card">
+            <h2>Feature Flags</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="flags-table">
+                <thead>
+                  <tr>
+                    <th>Key</th>
+                    <th>Description</th>
+                    <th>Default</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Debug Recipes</h2>
+            <div id="debug-recipes"></div>
+          </div>
+        </div>
+
+        <!-- 7. Payments Panel -->
+        <div id="panel-payments" class="tab-panel">
+          <div class="section-card">
+            <h2>Payment Provider</h2>
+            <div class="provider-info">
+              <span class="provider-badge" id="payment-provider">iyzico</span>
+              <span class="env-badge" id="payment-env">sandbox</span>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Payment Flow</h2>
+            <div class="flow-diagram" id="payment-flow"></div>
+          </div>
+
+          <div class="section-card">
+            <h2>Subscription Plans</h2>
+            <div class="plans-grid" id="plans-grid"></div>
+          </div>
+
+          <div class="section-card">
+            <h2>Risk Notes</h2>
+            <ul class="risk-list" id="payment-risks"></ul>
+          </div>
+
+          <div class="section-card">
+            <h2>Test Cards</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="test-cards-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Card Number</th>
+                    <th>Expiry</th>
+                    <th>CVV</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Admin Portal Panel -->
+        <div id="panel-admin" class="tab-panel">
+          <div class="section-card">
+            <h2>Framework</h2>
+            <p id="admin-framework"></p>
+          </div>
+
+          <div class="section-card">
+            <h2>Routes</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="admin-routes-table">
+                <thead>
+                  <tr>
+                    <th>Path</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Permissions</h2>
+            <ul class="permissions-list" id="admin-permissions"></ul>
+          </div>
+
+          <div class="section-card">
+            <h2>Support Operations</h2>
+            <ul class="operations-list" id="support-operations"></ul>
+          </div>
+        </div>
+
+        <!-- 9. QA Panel -->
+        <div id="panel-qa" class="tab-panel">
+          <div class="section-card">
+            <h2>Screenshot Reports</h2>
+            <div class="qa-links">
+              <a href="../revizyon_raporu.html" target="_blank" class="btn btn-primary">&#128247; Open Legacy Report</a>
+              <a href="../dev-dashboard/" target="_blank" class="btn btn-secondary">&#128202; Open Dev Dashboard</a>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Test Devices</h2>
+            <div class="table-wrapper">
+              <table class="data-table" id="devices-table">
+                <thead>
+                  <tr>
+                    <th>Device</th>
+                    <th>OS</th>
+                    <th>Resolution</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Test Cases</h2>
+            <div class="toolbar">
+              <button class="btn btn-sm btn-primary" onclick="addTestCase()">+ Add Test Case</button>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table sortable" id="testcases-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Category</th>
+                    <th>Title</th>
+                    <th>Priority</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Release Checklist</h2>
+            <div class="checklist" id="release-checklist"></div>
+          </div>
+        </div>
+
+        <!-- 10. Backlog Panel -->
+        <div id="panel-backlog" class="tab-panel">
+          <div class="section-card">
+            <h2>Issues</h2>
+            <div class="toolbar">
+              <button class="btn btn-sm btn-primary" onclick="addIssue()">+ Add Issue</button>
+              <div class="filter-group">
+                <select id="filter-issue-status" class="filter-select" onchange="filterIssues()">
+                  <option value="all">All Status</option>
+                  <option value="Backlog">Backlog</option>
+                  <option value="Todo">Todo</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Done">Done</option>
+                </select>
+                <select id="filter-issue-priority" class="filter-select" onchange="filterIssues()">
+                  <option value="all">All Priority</option>
+                  <option value="P0">P0</option>
+                  <option value="P1">P1</option>
+                  <option value="P2">P2</option>
+                  <option value="P3">P3</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table sortable" id="issues-table">
+                <thead>
+                  <tr>
+                    <th data-sort="id">ID</th>
+                    <th data-sort="title">Title</th>
+                    <th data-sort="type">Type</th>
+                    <th data-sort="severity">Severity</th>
+                    <th data-sort="priority">Priority</th>
+                    <th data-sort="status">Status</th>
+                    <th data-sort="area">Area</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Sprints</h2>
+            <div class="toolbar">
+              <button class="btn btn-sm btn-primary" onclick="addSprint()">+ Add Sprint</button>
+            </div>
+            <div id="sprints-container"></div>
+          </div>
+        </div>
+
+        <!-- 11. Builds Panel -->
+        <div id="panel-builds" class="tab-panel">
+          <div class="section-card">
+            <h2>Build History</h2>
+            <div class="toolbar">
+              <button class="btn btn-sm btn-primary" onclick="addBuild()">+ Add Build</button>
+            </div>
+            <div id="builds-container"></div>
+          </div>
+
+          <div class="section-card">
+            <h2>Release Notes Template</h2>
+            <div class="template-box">
+              <pre id="release-notes-template">Version X.X.X (Build #XX)
+
+What's New:
+- Feature 1
+- Feature 2
+
+Bug Fixes:
+- Fix 1
+- Fix 2
+
+Known Issues:
+- Issue 1</pre>
+              <button class="btn btn-sm btn-secondary" onclick="copyTemplate()">&#128203; Copy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12. Compliance Panel -->
+        <div id="panel-compliance" class="tab-panel">
+          <div class="compliance-tabs">
+            <button class="compliance-tab active" data-store="apple" onclick="switchStore('apple')">&#127822; Apple App Store</button>
+            <button class="compliance-tab" data-store="google" onclick="switchStore('google')">&#129302; Google Play</button>
+          </div>
+
+          <div id="apple-compliance" class="store-panel active">
+            <div class="section-card">
+              <h2>App Store Status</h2>
+              <div class="store-status" id="apple-status"></div>
+            </div>
+
+            <div class="section-card">
+              <h2>Submission Checklist</h2>
+              <div class="checklist" id="apple-checklist"></div>
+            </div>
+
+            <div class="section-card">
+              <h2>Privacy Nutrition Labels</h2>
+              <div class="table-wrapper">
+                <table class="data-table" id="privacy-labels-table">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Collected</th>
+                      <th>Purpose</th>
+                      <th>Linked to User</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div id="google-compliance" class="store-panel">
+            <div class="section-card">
+              <h2>Play Store Status</h2>
+              <div class="store-status" id="google-status"></div>
+            </div>
+
+            <div class="section-card">
+              <h2>Submission Checklist</h2>
+              <div class="checklist" id="google-checklist"></div>
+            </div>
+
+            <div class="section-card">
+              <h2>Data Safety Form</h2>
+              <div id="data-safety-form"></div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h2>Rejection History</h2>
+            <div id="rejections-list"></div>
+          </div>
+        </div>
+
+        <!-- 13. Links Panel -->
+        <div id="panel-links" class="tab-panel">
+          <div class="section-card">
+            <div class="toolbar">
+              <button class="btn btn-sm btn-primary" onclick="addLink()">+ Add Link</button>
+              <input type="text" id="search-links" class="search-input" placeholder="Search links..." oninput="filterLinks()">
+            </div>
+            <div class="links-grid" id="links-grid"></div>
+          </div>
+        </div>
+
+        <!-- 14. Changelog Panel -->
+        <div id="panel-changelog" class="tab-panel">
+          <div class="section-card">
+            <div class="toolbar">
+              <button class="btn btn-sm btn-primary" onclick="addChangelog()">+ Add Entry</button>
+            </div>
+            <div class="changelog-list" id="changelog-list"></div>
+          </div>
+        </div>
+
+        <!-- 15. Export Panel -->
+        <div id="panel-export" class="tab-panel">
+          <div class="export-grid">
+            <div class="export-card">
+              <h3>&#128190; JSON Export</h3>
+              <p>Download all project data as JSON file.</p>
+              <button class="btn btn-primary" onclick="exportJSON()">Export JSON</button>
+            </div>
+
+            <div class="export-card">
+              <h3>&#128194; JSON Import</h3>
+              <p>Import a previously exported JSON file.</p>
+              <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+                <div class="dropzone-icon">&#128193;</div>
+                <div class="dropzone-text">Drop JSON file or click to browse</div>
+              </div>
+              <input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileImport(event)">
+            </div>
+
+            <div class="export-card">
+              <h3>&#128203; CSV Exports</h3>
+              <p>Export specific data as CSV.</p>
+              <div class="export-buttons">
+                <button class="btn btn-secondary" onclick="exportCSV('issues')">Issues CSV</button>
+                <button class="btn btn-secondary" onclick="exportCSV('builds')">Builds CSV</button>
+                <button class="btn btn-secondary" onclick="exportCSV('links')">Links CSV</button>
+              </div>
+            </div>
+
+            <div class="export-card">
+              <h3>&#128424; Print / PDF</h3>
+              <p>Print selected sections.</p>
+              <div class="print-options">
+                <label><input type="checkbox" value="overview" checked> Overview</label>
+                <label><input type="checkbox" value="product"> Product</label>
+                <label><input type="checkbox" value="architecture"> Architecture</label>
+                <label><input type="checkbox" value="backlog"> Backlog</label>
+                <label><input type="checkbox" value="builds"> Builds</label>
+                <label><input type="checkbox" value="compliance"> Compliance</label>
+              </div>
+              <button class="btn btn-secondary" onclick="printSelected()">&#128424; Print Selected</button>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h3>Local Storage</h3>
+            <p>Data is auto-saved to browser localStorage.</p>
+            <p>Last saved: <span id="export-last-saved">--</span></p>
+            <button class="btn btn-danger" onclick="clearData()">&#128465; Clear All Data</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Modal</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="modal-save" onclick="saveModal()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>
